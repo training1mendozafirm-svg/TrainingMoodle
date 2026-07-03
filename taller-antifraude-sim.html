@@ -1,0 +1,2394 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simulador Antifraude – TMLF</title>
+  <style>
+/* ─── FONTS ─────────────────────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap');
+
+/* ─── TOKENS ─────────────────────────────────────────────────────────────── */
+:root {
+  --navy:       #0d1b3e;
+  --navy-mid:   #1a2a5e;
+  --navy-light: #253570;
+  --purple:     #2d1f6e;
+  --purple-mid: #4a3a8a;
+  --accent:     #7c6fff;
+  --accent-glow:#a78bfa;
+  --teal:       #38d9a9;
+  --teal-dim:   #20967a;
+  --gold:       #f9c74f;
+  --danger:     #ff6b6b;
+  --danger-dim: #c94040;
+  --success:    #51cf66;
+  --white:      #f0f4ff;
+  --muted:      #8b9cc8;
+  --glass:      rgba(255,255,255,0.05);
+  --glass-border: rgba(255,255,255,0.12);
+  --shadow:     0 8px 32px rgba(0,0,0,0.4);
+  --radius:     16px;
+  --radius-sm:  10px;
+  --timer-full: 50;
+}
+
+/* ─── RESET ──────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; scroll-behavior: smooth; }
+
+body {
+  font-family: 'Sora', sans-serif;
+  background: var(--navy);
+  color: var(--white);
+  min-height: 100vh;
+  overflow-x: hidden;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 20% 10%, rgba(45,31,110,0.6) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 80%, rgba(28,54,140,0.5) 0%, transparent 60%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Ccircle cx='30' cy='30' r='1' fill='rgba(255,255,255,0.04)'/%3E%3C/svg%3E");
+}
+
+/* ─── SCREEN MANAGER ─────────────────────────────────────────────────────── */
+.screen { display: none; min-height: 100vh; }
+.screen.active { display: flex; flex-direction: column; }
+
+/* ─── INTRO SCREEN ───────────────────────────────────────────────────────── */
+#screen-intro {
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+  position: relative;
+}
+
+.intro-logo {
+  width: 80px; height: 80px;
+  background: linear-gradient(135deg, var(--accent), var(--teal));
+  border-radius: 20px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2rem;
+  margin: 0 auto 1.5rem;
+  box-shadow: 0 0 40px rgba(124,111,255,0.4);
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%,100% { box-shadow: 0 0 40px rgba(124,111,255,0.4); }
+  50%      { box-shadow: 0 0 70px rgba(124,111,255,0.7); }
+}
+
+.intro-badge {
+  display: inline-block;
+  background: rgba(124,111,255,0.15);
+  border: 1px solid var(--accent);
+  color: var(--accent-glow);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 0.3rem 0.9rem;
+  border-radius: 100px;
+  margin-bottom: 1rem;
+}
+
+.intro-title {
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(135deg, var(--white) 30%, var(--accent-glow));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.intro-sub {
+  font-size: 1.05rem;
+  color: var(--muted);
+  margin-bottom: 2rem;
+  font-weight: 300;
+}
+
+.intro-card {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  padding: 1.5rem 2rem;
+  max-width: 620px;
+  margin: 0 auto 2rem;
+  text-align: left;
+}
+
+.intro-card h3 {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--teal);
+  margin-bottom: 1rem;
+}
+
+.intro-rules {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.intro-rules li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+  color: rgba(240,244,255,0.85);
+  line-height: 1.5;
+}
+
+.rule-icon {
+  flex-shrink: 0;
+  width: 24px; height: 24px;
+  background: rgba(56,217,169,0.12);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.8rem;
+}
+
+.protocol-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+  max-width: 620px;
+  margin: 0 auto 2rem;
+}
+
+.protocol-chip {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 1rem;
+  text-align: left;
+}
+
+.protocol-chip .p-label {
+  display: block;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+  margin-bottom: 0.3rem;
+}
+
+.protocol-chip .p-desc {
+  font-size: 0.8rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.chip-preventivo .p-label { color: var(--gold); }
+.chip-antifraude .p-label { color: var(--danger); }
+.chip-friendly   .p-label { color: var(--teal); }
+.chip-noapplica  .p-label { color: var(--muted); }
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, var(--accent), #5b4fd4);
+  color: #fff;
+  font-family: 'Sora', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 0.9rem 2.5rem;
+  border: none;
+  border-radius: 100px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 20px rgba(124,111,255,0.4);
+  letter-spacing: 0.02em;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(124,111,255,0.6);
+}
+
+.btn-primary:active { transform: translateY(0); }
+
+/* ─── SIMULATOR LAYOUT ───────────────────────────────────────────────────── */
+#screen-sim {
+  flex-direction: row;
+  min-height: 100vh;
+}
+
+/* SIDEBAR */
+.sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  background: rgba(10,16,40,0.7);
+  border-right: 1px solid var(--glass-border);
+  padding: 1.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  backdrop-filter: blur(10px);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0 0.5rem;
+}
+
+.sidebar-logo .logo-icon {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, var(--accent), var(--teal));
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem;
+}
+
+.sidebar-logo span {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+
+/* Client panel */
+.client-panel {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  padding: 1.2rem;
+  text-align: center;
+}
+
+.client-avatar {
+  width: 64px; height: 64px;
+  background: linear-gradient(135deg, var(--navy-mid), var(--purple-mid));
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.8rem;
+  margin: 0 auto 0.8rem;
+  position: relative;
+}
+
+.client-avatar::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  background: linear-gradient(var(--navy),var(--navy)) padding-box,
+              linear-gradient(135deg, var(--accent), var(--teal)) border-box;
+}
+
+.client-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.metric-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin-bottom: 0.4rem;
+  text-align: left;
+}
+
+.progress-track {
+  height: 8px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 100px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 100px;
+  background: linear-gradient(90deg, var(--purple-mid), var(--accent));
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 0%;
+}
+
+/* Satisfaction meter */
+.satisfaction-track {
+  height: 10px;
+  border-radius: 100px;
+  background: linear-gradient(90deg, var(--success), var(--gold), var(--danger));
+  position: relative;
+  margin: 0.4rem 0 0.3rem;
+}
+
+.satisfaction-faces {
+  display: flex;
+  justify-content: space-between;
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.satisfaction-thumb {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 16px; height: 16px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+  transition: left 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  left: 5%;
+}
+
+/* Timer */
+.timer-section {
+  text-align: center;
+}
+
+.timer-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin-bottom: 0.3rem;
+}
+
+.timer-display {
+  font-family: 'Space Mono', monospace;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--teal);
+  transition: color 0.5s;
+  line-height: 1;
+}
+
+.timer-display.warning { color: var(--gold); }
+.timer-display.danger  { color: var(--danger); animation: blink 0.5s ease-in-out infinite; }
+
+@keyframes blink {
+  0%,100% { opacity: 1; }
+  50%      { opacity: 0.4; }
+}
+
+.timer-arc {
+  width: 80px; height: 80px;
+  margin: 0 auto 0.4rem;
+  position: relative;
+}
+
+.timer-arc svg { transform: rotate(-90deg); }
+.timer-arc .arc-bg { fill: none; stroke: rgba(255,255,255,0.08); stroke-width: 5; }
+.timer-arc .arc-fill {
+  fill: none;
+  stroke: var(--teal);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-dasharray: 226;
+  stroke-dashoffset: 0;
+  transition: none;
+}
+.timer-arc .arc-fill.warning { stroke: var(--gold); }
+.timer-arc .arc-fill.danger  { stroke: var(--danger); }
+
+.timer-center {
+  position: absolute;
+  inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Space Mono', monospace;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--teal);
+  transition: color 0.5s;
+}
+
+.timer-center.warning { color: var(--gold); }
+.timer-center.danger  { color: var(--danger); }
+
+/* Case nav */
+.case-nav {
+  flex: 1;
+}
+
+.case-nav-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin-bottom: 0.6rem;
+}
+
+.case-nav-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.case-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.6rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  color: var(--muted);
+  border: 1px solid transparent;
+  transition: all 0.2s;
+}
+
+.case-nav-item.done {
+  color: var(--teal);
+  background: rgba(56,217,169,0.06);
+  border-color: rgba(56,217,169,0.15);
+}
+
+.case-nav-item.active {
+  color: var(--white);
+  background: rgba(124,111,255,0.15);
+  border-color: rgba(124,111,255,0.3);
+  font-weight: 600;
+}
+
+.case-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  border: 1.5px solid currentColor;
+  flex-shrink: 0;
+}
+
+.case-nav-item.done .case-dot { background: currentColor; }
+.case-nav-item.active .case-dot { background: var(--accent); border-color: var(--accent); }
+
+/* ─── MAIN CONTENT ───────────────────────────────────────────────────────── */
+.main-content {
+  flex: 1;
+  padding: 2rem 2.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 900px;
+  overflow-y: auto;
+}
+
+/* Case header */
+.case-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.case-number-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--accent-glow);
+  background: rgba(124,111,255,0.12);
+  border: 1px solid rgba(124,111,255,0.25);
+  padding: 0.25rem 0.75rem;
+  border-radius: 100px;
+}
+
+.case-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.part-indicator {
+  margin-left: auto;
+  font-size: 0.75rem;
+  color: var(--muted);
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  padding: 0.2rem 0.6rem;
+  border-radius: 100px;
+}
+
+/* Scenario bubble */
+.scenario-bubble {
+  background: rgba(26,42,94,0.6);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  border-top-left-radius: 4px;
+  padding: 1.4rem 1.6rem;
+  position: relative;
+  font-size: 1rem;
+  line-height: 1.65;
+  color: rgba(240,244,255,0.92);
+}
+
+.scenario-bubble::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--teal));
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+
+.scenario-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 700;
+  color: var(--teal);
+  margin-bottom: 0.6rem;
+}
+
+.client-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-bottom: 0.6rem;
+}
+
+/* Question area */
+.question-area {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  padding: 1.4rem 1.6rem;
+}
+
+.question-text {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-bottom: 1.2rem;
+  line-height: 1.4;
+}
+
+.options-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.option-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: rgba(255,255,255,0.04);
+  border: 1.5px solid rgba(255,255,255,0.1);
+  border-radius: var(--radius-sm);
+  padding: 0.9rem 1.1rem;
+  color: var(--white);
+  font-family: 'Sora', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+  width: 100%;
+}
+
+.option-btn:hover:not(:disabled) {
+  background: rgba(124,111,255,0.12);
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.option-btn:disabled { cursor: not-allowed; }
+
+.option-btn.selected {
+  background: rgba(124,111,255,0.2);
+  border-color: var(--accent);
+}
+
+.option-btn.correct {
+  background: rgba(81,207,102,0.15);
+  border-color: var(--success);
+  color: var(--success);
+}
+
+.option-btn.incorrect {
+  background: rgba(255,107,107,0.15);
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.option-letter {
+  width: 28px; height: 28px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.08);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+
+.option-btn.correct .option-letter { background: rgba(81,207,102,0.3); }
+.option-btn.incorrect .option-letter { background: rgba(255,107,107,0.3); }
+
+/* Justification */
+.justification-area {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  padding: 1.4rem 1.6rem;
+  display: none;
+}
+
+.justification-area.visible { display: block; }
+
+.justification-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent-glow);
+  margin-bottom: 1rem;
+}
+
+.just-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.just-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: rgba(255,255,255,0.03);
+  border: 1.5px solid rgba(255,255,255,0.08);
+  border-radius: var(--radius-sm);
+  padding: 0.7rem 1rem;
+  color: rgba(240,244,255,0.8);
+  font-family: 'Sora', sans-serif;
+  font-size: 0.85rem;
+  font-style: italic;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  transition: all 0.15s;
+}
+
+.just-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: rgba(124,111,255,0.08);
+  color: var(--white);
+}
+
+.just-btn.correct {
+  border-color: var(--teal);
+  background: rgba(56,217,169,0.1);
+  color: var(--teal);
+}
+
+.just-btn.incorrect {
+  border-color: var(--danger);
+  background: rgba(255,107,107,0.08);
+  color: var(--danger);
+}
+
+.just-btn:disabled { cursor: not-allowed; }
+
+/* Open justification */
+.open-just-area {
+  display: none;
+}
+
+.open-just-area.visible { display: block; }
+
+.open-just-prompt {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-bottom: 0.6rem;
+  font-style: italic;
+}
+
+.open-just-input {
+  width: 100%;
+  background: rgba(255,255,255,0.04);
+  border: 1.5px solid rgba(255,255,255,0.1);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 1rem;
+  color: var(--white);
+  font-family: 'Sora', sans-serif;
+  font-size: 0.9rem;
+  resize: none;
+  transition: border-color 0.2s;
+  min-height: 70px;
+}
+
+.open-just-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.btn-continue {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, var(--accent), #5b4fd4);
+  color: #fff;
+  font-family: 'Sora', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.7rem 1.8rem;
+  border: none;
+  border-radius: 100px;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 0.8rem;
+  box-shadow: 0 4px 16px rgba(124,111,255,0.35);
+}
+
+.btn-continue:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(124,111,255,0.5); }
+.btn-continue:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+/* ─── FEEDBACK PANEL ─────────────────────────────────────────────────────── */
+.feedback-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(5,10,30,0.85);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.feedback-overlay.show {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.feedback-card {
+  background: linear-gradient(145deg, #141f4a, #1e1560);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 2rem 2.5rem;
+  max-width: 580px;
+  width: 100%;
+  transform: scale(0.9) translateY(20px);
+  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+
+.feedback-overlay.show .feedback-card {
+  transform: scale(1) translateY(0);
+}
+
+.feedback-icon {
+  font-size: 3rem;
+  margin-bottom: 0.8rem;
+  display: block;
+  animation: pop-in 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+
+@keyframes pop-in {
+  from { transform: scale(0.5); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+
+.feedback-title {
+  font-size: 1.4rem;
+  font-weight: 800;
+  margin-bottom: 0.75rem;
+}
+
+.feedback-title.correct-title { color: var(--success); }
+.feedback-title.incorrect-title { color: var(--danger); }
+
+.feedback-body {
+  font-size: 0.95rem;
+  color: rgba(240,244,255,0.88);
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.feedback-impact {
+  background: rgba(255,255,255,0.04);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  padding: 0.9rem 1.1rem;
+  font-size: 0.88rem;
+  color: var(--muted);
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+}
+
+.feedback-impact strong { color: var(--white); }
+
+.impact-label {
+  display: block;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--accent-glow);
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+}
+
+/* ─── RESULTS SCREEN ─────────────────────────────────────────────────────── */
+#screen-results {
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+}
+
+.results-card {
+  background: linear-gradient(145deg, #141f4a, #1e1560);
+  border: 1px solid var(--glass-border);
+  border-radius: 24px;
+  padding: 2.5rem 3rem;
+  max-width: 680px;
+  width: 100%;
+}
+
+.score-circle {
+  width: 160px; height: 160px;
+  margin: 0 auto 1.5rem;
+  position: relative;
+}
+
+.score-circle svg { transform: rotate(-90deg); }
+.score-arc-bg { fill: none; stroke: rgba(255,255,255,0.06); stroke-width: 10; }
+.score-arc-fill {
+  fill: none;
+  stroke-width: 10;
+  stroke-linecap: round;
+  stroke-dasharray: 440;
+  stroke-dashoffset: 440;
+  transition: stroke-dashoffset 1.5s cubic-bezier(0.4,0,0.2,1), stroke 0.5s;
+}
+
+.score-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.score-number {
+  font-size: 2.8rem;
+  font-weight: 800;
+  font-family: 'Space Mono', monospace;
+  line-height: 1;
+}
+
+.score-denom {
+  font-size: 0.8rem;
+  color: var(--muted);
+  font-family: 'Space Mono', monospace;
+}
+
+.results-title {
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin-bottom: 0.4rem;
+}
+
+.results-status {
+  font-size: 0.9rem;
+  padding: 0.3rem 1rem;
+  border-radius: 100px;
+  display: inline-block;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+}
+
+.status-pass { background: rgba(81,207,102,0.15); color: var(--success); border: 1px solid var(--success); }
+.status-fail { background: rgba(255,107,107,0.15); color: var(--danger); border: 1px solid var(--danger); }
+
+.results-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.8rem;
+  margin-bottom: 1.5rem;
+}
+
+.stat-box {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  padding: 1rem;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  font-family: 'Space Mono', monospace;
+  display: block;
+}
+
+.stat-label {
+  font-size: 0.72rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.tendency-box {
+  background: rgba(124,111,255,0.08);
+  border: 1px solid rgba(124,111,255,0.2);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.4rem;
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.tendency-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-bottom: 0.3rem;
+}
+
+.tendency-desc {
+  font-size: 0.82rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.question-review {
+  text-align: left;
+  margin-bottom: 1.5rem;
+}
+
+.review-title {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin-bottom: 0.6rem;
+}
+
+.review-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.review-dot {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  font-family: 'Space Mono', monospace;
+}
+
+.review-dot.correct-dot { background: rgba(81,207,102,0.2); color: var(--success); border: 1px solid rgba(81,207,102,0.4); }
+.review-dot.incorrect-dot { background: rgba(255,107,107,0.2); color: var(--danger); border: 1px solid rgba(255,107,107,0.4); }
+
+/* ─── ANIMATIONS ─────────────────────────────────────────────────────────── */
+.fade-in {
+  animation: fadeInUp 0.4s ease both;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── SCROLLBAR ──────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+</style>
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       SCREEN 1 — INTRO
+  ════════════════════════════════════════════════════════════════════════ -->
+  <section id="screen-intro" class="screen">
+    <div class="intro-logo">🛡️</div>
+    <div class="intro-badge">Training Department · TMLF</div>
+    <h1 class="intro-title">Simulador Antifraude</h1>
+    <p class="intro-sub">Taller de aplicación de protocolos en casos reales</p>
+
+    <!-- Protocol reference -->
+    <div class="protocol-grid">
+      <div class="protocol-chip chip-preventivo">
+        <span class="p-label">🟡 Preventivo</span>
+        <span class="p-desc">Hay sospecha pero no certeza ni admisión directa de fraude.</span>
+      </div>
+      <div class="protocol-chip chip-antifraude">
+        <span class="p-label">🔴 Antifraude</span>
+        <span class="p-desc">El cliente admite explícitamente haber mentido o usado documentos falsos.</span>
+      </div>
+      <div class="protocol-chip chip-friendly">
+        <span class="p-label">🟢 Friendly</span>
+        <span class="p-desc">Confusión, mala memoria, barrera idiomática o recomendación sin contexto.</span>
+      </div>
+      <div class="protocol-chip chip-noapplica">
+        <span class="p-label">⚪ No aplica</span>
+        <span class="p-desc">No hay señales de fraude ni confusión. La información es clara.</span>
+      </div>
+    </div>
+
+    <!-- Rules -->
+    <div class="intro-card">
+      <h3>📋 Instrucciones del taller</h3>
+      <ul class="intro-rules">
+        <li>
+          <span class="rule-icon">📌</span>
+          <span>Los casos se presentan en orden secuencial. Completa cada uno antes de avanzar al siguiente.</span>
+        </li>
+        <li>
+          <span class="rule-icon">🔓</span>
+          <span>Algunos casos tienen una segunda parte que se desbloqueará tras responder la primera.</span>
+        </li>
+        <li>
+          <span class="rule-icon">⏱️</span>
+          <span>Tienes <strong>50 segundos</strong> por pregunta para simular la presión de una llamada real. Si el tiempo se acaba, el indicador de satisfacción caerá al mínimo.</span>
+        </li>
+        <li>
+          <span class="rule-icon">💬</span>
+          <span>Recibirás <strong>feedback inmediato</strong> con el impacto operativo de tu decisión tras cada respuesta.</span>
+        </li>
+        <li>
+          <span class="rule-icon">🔒</span>
+          <span>No se puede retroceder ni cambiar respuestas. Tus respuestas quedan guardadas si cierras y vuelves.</span>
+        </li>
+        <li>
+          <span class="rule-icon">🏆</span>
+          <span>Al final obtendrás tu calificación del <strong>0 al 10</strong>. El puntaje mínimo de aprobación es <strong>8.5</strong>.</span>
+        </li>
+      </ul>
+    </div>
+
+    <button id="btn-start" class="btn-primary">
+      Comenzar simulación
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </button>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       SCREEN 2 — SIMULATOR
+  ════════════════════════════════════════════════════════════════════════ -->
+  <section id="screen-sim" class="screen">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="logo-icon">🛡️</div>
+        <span>Simulador Antifraude</span>
+      </div>
+
+      <!-- Client panel -->
+      <div class="client-panel">
+        <div class="client-avatar">👤</div>
+        <div class="client-name">Cliente</div>
+
+        <div class="metric-label">Progreso del taller</div>
+        <div class="progress-track">
+          <div class="progress-fill"></div>
+        </div>
+
+        <div class="metric-label">Satisfacción de PC</div>
+        <div class="satisfaction-faces">
+          <span title="Satisfecho">😊</span>
+          <span title="Insatisfecho">😡</span>
+        </div>
+        <div class="satisfaction-track">
+          <div class="satisfaction-thumb"></div>
+        </div>
+
+        <div style="height:1rem;"></div>
+
+        <!-- Timer -->
+        <div class="metric-label">Tiempo de decisión</div>
+        <button onclick="if(typeof startTimer === 'function'){ try{ startTimer(); } catch(e){ console.error('startTimer error:',e); } } else { console.error('startTimer not defined'); }" style="font-size:0.6rem;padding:0.3rem;margin-bottom:0.3rem;background:#f0a500;border:none;border-radius:4px;cursor:pointer;width:100%;">⚠ EMERGENCY START TIMER</button>
+
+        <div id="timer-text" style="font-family:'Space Mono','Courier New',monospace;font-size:2rem;font-weight:700;color:#4ecdc4;text-align:center;line-height:1;margin:0.3rem 0 0.4rem;letter-spacing:0.05em;">00:50</div>
+
+        <div style="height:6px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden;margin-bottom:0.4rem;">
+          <div id="timer-bar" style="height:100%;width:100%;background:#4ecdc4;border-radius:3px;"></div>
+        </div>
+
+        <div class="timer-arc">
+          <svg width="80" height="80" viewBox="0 0 80 80">
+            <circle class="arc-bg" cx="40" cy="40" r="36"/>
+            <circle class="arc-fill" cx="40" cy="40" r="36"/>
+          </svg>
+          <div class="timer-center">00:50</div>
+        </div>
+      </div>
+
+      <!-- Case navigation -->
+      <nav class="case-nav">
+        <div class="case-nav-label">Casos</div>
+        <div class="case-nav-list">
+          <!-- Built by JS -->
+        </div>
+      </nav>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+
+      <!-- Case header -->
+      <div class="case-header fade-in">
+        <span class="case-number-badge">Caso 1</span>
+        <h2 class="case-title">SSN desde los 5 años</h2>
+        <span class="part-indicator" style="display:none;">Parte 1 de 2</span>
+      </div>
+
+      <!-- Scenario bubble -->
+      <div class="scenario-bubble fade-in">
+        <div class="scenario-label">📞 Escenario</div>
+        <div class="client-icon">
+          <span>👤</span>
+          <span>Cliente dice:</span>
+        </div>
+        <p class="scenario-text"></p>
+      </div>
+
+      <!-- Protocol question -->
+      <div class="question-area fade-in">
+        <div class="question-text">¿Qué protocolo aplicas en este momento?</div>
+        <div class="options-grid">
+          <!-- Built by JS -->
+        </div>
+      </div>
+
+      <!-- Justification (key phrase) -->
+      <div class="justification-area">
+        <div class="justification-title">Justificación – selecciona la frase clave</div>
+        <div class="just-question-text" style="font-size:0.88rem;color:var(--muted);margin-bottom:0.8rem;"></div>
+        <div class="just-options">
+          <!-- Built by JS -->
+        </div>
+      </div>
+
+      <!-- Open justification (for part 2 questions) -->
+      <div class="open-just-area justification-area">
+        <div class="justification-title">Justificación</div>
+        <p class="open-just-prompt">¿Por qué mantienes o cambias el protocolo? (opcional, para tu reflexión)</p>
+        <textarea class="open-just-input" placeholder="Escribe tu razonamiento aquí..."></textarea>
+        <button class="btn-continue" disabled>
+          Continuar
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+
+    </main>
+
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       FEEDBACK OVERLAY
+  ════════════════════════════════════════════════════════════════════════ -->
+  <div class="feedback-overlay">
+    <div class="feedback-card">
+      <span class="feedback-icon">✅</span>
+      <h3 class="feedback-title correct-title">¡Correcto!</h3>
+      <div class="feedback-body"></div>
+      <div class="feedback-impact">
+        <span class="impact-label">💼 Impacto operativo</span>
+        <span class="feedback-impact-text"></span>
+      </div>
+      <button class="feedback-next-btn btn-primary">
+        Continuar
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       SCREEN 3 — RESULTS
+  ════════════════════════════════════════════════════════════════════════ -->
+  <section id="screen-results" class="screen">
+    <div class="results-card">
+
+      <!-- Score circle -->
+      <div class="score-circle">
+        <svg width="160" height="160" viewBox="0 0 160 160">
+          <circle class="score-arc-bg" cx="80" cy="80" r="70"/>
+          <circle class="score-arc-fill" cx="80" cy="80" r="70"/>
+        </svg>
+        <div class="score-center">
+          <span class="score-number">0.0</span>
+          <span class="score-denom">/ 10</span>
+        </div>
+      </div>
+
+      <h2 class="results-title">¡Excelente trabajo!</h2>
+      <span class="results-status status-pass">✓ Aprobado</span>
+
+      <!-- Stats row -->
+      <div class="results-stats">
+        <div class="stat-box">
+          <span class="stat-value stat-correct" style="color:var(--success);">0</span>
+          <span class="stat-label">Correctas</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-value stat-incorrect" style="color:var(--danger);">0</span>
+          <span class="stat-label">Incorrectas</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-value stat-total" style="color:var(--accent-glow);">13</span>
+          <span class="stat-label">Total</span>
+        </div>
+      </div>
+
+      <!-- Tendency -->
+      <div class="tendency-block tendency-box">
+        <div class="tendency-label">Tendencia de decisión</div>
+        <div class="tendency-desc"></div>
+      </div>
+
+      <!-- Question review -->
+      <div class="question-review">
+        <div class="review-title">Detalle por pregunta</div>
+        <div class="review-grid"></div>
+      </div>
+
+      <p style="font-size:0.8rem;color:var(--muted);margin-top:0.5rem;">
+        Tu calificación ha sido registrada en el sistema de aprendizaje.<br/>
+        Mendoza Law Firm Training Department · TMLF
+      </p>
+
+      <button id="btn-restart" style="
+        margin-top:1.2rem;
+        background:transparent;
+        border:1.5px solid rgba(255,255,255,0.25);
+        color:var(--muted);
+        border-radius:8px;
+        padding:0.55rem 1.4rem;
+        font-size:0.8rem;
+        font-family:inherit;
+        cursor:pointer;
+        transition:border-color 0.2s, color 0.2s;
+        letter-spacing:0.04em;"
+        onmouseover="this.style.borderColor='rgba(255,255,255,0.55)';this.style.color='#fff';"
+        onmouseout="this.style.borderColor='rgba(255,255,255,0.25)';this.style.color='var(--muted)';">
+        &#8635; Reintentar simulador
+      </button>
+
+    </div>
+  </section>
+
+  <!-- Scripts -->
+  <script>
+/**
+ * SCORM 1.2 API Wrapper – Mendoza Law Firm
+ */
+var SCORM = (function () {
+  var API = null;
+  var initialized = false;
+  var finished = false;
+
+  function findAPI(win) {
+    var tries = 0;
+    while (tries++ < 500) {
+      try {
+        if (win.API) return win.API;
+      } catch (e) { /* cross-origin frame, can't read API — stop here */ }
+      if (!win.parent || win.parent === win) break;
+      try {
+        win = win.parent;
+      } catch (e) { break; }
+    }
+    return null;
+  }
+
+  function getAPI() {
+    if (API) return API;
+    API = findAPI(window);
+    if (!API) {
+      try {
+        if (window.opener) API = findAPI(window.opener);
+      } catch (e) { /* cross-origin opener, ignore */ }
+    }
+    return API;
+  }
+
+  function init() {
+    if (initialized) return true;
+    var api = getAPI();
+    if (!api) return false;
+    var r = api.LMSInitialize('');
+    if (r === 'true' || r === true) { initialized = true; return true; }
+    return false;
+  }
+
+  function getValue(el) {
+    var api = getAPI();
+    if (!api || !initialized) return '';
+    return api.LMSGetValue(el);
+  }
+
+  function setValue(el, val) {
+    var api = getAPI();
+    if (!api || !initialized) return false;
+    var r = api.LMSSetValue(el, val);
+    return r === 'true' || r === true;
+  }
+
+  function commit() {
+    var api = getAPI();
+    if (!api || !initialized) return false;
+    return api.LMSCommit('') === 'true';
+  }
+
+  function finish() {
+    if (!initialized || finished) return false;
+    finished = true;
+    var api = getAPI();
+    if (!api) return false;
+    api.LMSFinish('');
+    return true;
+  }
+
+  function setScore(raw, min, max) {
+    setValue('cmi.core.score.raw', raw);
+    setValue('cmi.core.score.min', min);
+    setValue('cmi.core.score.max', max);
+  }
+
+  function setStatus(s) { setValue('cmi.core.lesson_status', s); }
+
+  function setSuspendData(data) {
+    setValue('cmi.suspend_data', JSON.stringify(data));
+    commit();
+  }
+
+  function getSuspendData() {
+    try {
+      var raw = getValue('cmi.suspend_data');
+      if (!raw || raw === '') return null;
+      return JSON.parse(raw);
+    } catch (e) { return null; }
+  }
+
+  function setLessonLocation(loc) { setValue('cmi.core.lesson_location', loc); }
+
+  return {
+    init: init, finish: finish,
+    setScore: setScore, setStatus: setStatus,
+    setSuspendData: setSuspendData, getSuspendData: getSuspendData,
+    setLessonLocation: setLessonLocation, commit: commit
+  };
+})();
+
+</script>
+  <script>
+/**
+ * Simulador Antifraude – Data
+ * All 10 cases with questions, options, feedback, and scoring
+ * Total points possible: 13 (cases with evolution count as 2 pts each)
+ * Cases 1,2,3 have evolution (2 pts each) = 6 pts
+ * Cases 4-10 single question (1 pt each) = 7 pts
+ * Total = 13 questions
+ * Score 0-10 mapped from 0-13 correct
+ */
+
+var CASES = [
+  // ─── CASO 1 ───────────────────────────────────────────────────────────────
+  {
+    id: 1,
+    title: "Caso 1 – SSN desde los 5 años",
+    badge: "🧪",
+    questions: [
+      {
+        qid: "1a",
+        part: 1,
+        scenario: "\"Mi papá me dio un número de seguro social cuando tenía 5 años, en 1975. Lo he usado para todo, hasta para hacer taxes. La verdad no sé si es real o falso. Salí de EE.UU. cuando terminé el tercer grado y regresé solo a los 17 años.\"",
+        question: "¿Qué protocolo aplicas en este momento?",
+        type: "protocol",
+        options: [
+          { id: "a", label: "Preventivo" },
+          { id: "b", label: "Antifraude" },
+          { id: "c", label: "Friendly" },
+          { id: "d", label: "No aplica" }
+        ],
+        correct: "a",
+        justification: {
+          question: "Justificación – selecciona la frase clave:",
+          options: [
+            { id: "j1", label: "\"No sé si es real o falso\"" },
+            { id: "j2", label: "\"Lo he usado desde los 5 años\"" },
+            { id: "j3", label: "\"Mi papá me lo dio\"" },
+            { id: "j4", label: "\"Salí y regresé después\"" }
+          ],
+          correct: "j1"
+        },
+        feedback: {
+          correct: {
+            icon: "✅",
+            title: "¡Correcto! Aplicaste Preventivo",
+            body: "Aplicaste <strong>Preventivo</strong> porque hay sospecha de documento falso, pero el cliente no admite intención de fraude.",
+            impact: "El caso pasó a revisión. Se envió el disclaimer preventivo y se le pidió al cliente verificar la autenticidad del SSN antes de continuar. Esto evitó que avanzara un caso con posible documento fraudulento."
+          },
+          incorrect: {
+            icon: "❌",
+            title: "Respuesta incorrecta",
+            body: "La respuesta correcta era <strong>Preventivo</strong>, porque el cliente no admite intención de mentir, pero hay bandera roja (uso de SSN de origen dudoso).",
+            impact: {
+              "b": "Si aplicabas Antifraude, cerrabas el caso innecesariamente y perdías un cliente que quizá solo heredó un documento sin saberlo.",
+              "c": "Si aplicabas Friendly, subestimabas el riesgo y el caso podría haber avanzado con documento falso, exponiendo a la firma.",
+              "d": "Si aplicabas No aplica, ignorabas una bandera roja clara sobre el origen del SSN."
+            }
+          }
+        },
+        points: 1
+      },
+      {
+        qid: "1b",
+        part: 2,
+        scenario: "Al día siguiente, el cliente llama y dice: <em>\"Ya investigué, y el SSN sí es falso. Mi papá lo compró. ¿Podemos seguir con mi caso de todas maneras?\"</em>",
+        question: "¿Actualizas el protocolo? ¿Cuál aplicas ahora?",
+        type: "protocol",
+        options: [
+          { id: "a", label: "Mantener Preventivo" },
+          { id: "b", label: "Cambiar a Antifraude" },
+          { id: "c", label: "Cambiar a Friendly" },
+          { id: "d", label: "No aplica" }
+        ],
+        correct: "b",
+        justification: null,
+        openJustification: true,
+        feedback: {
+          correct: {
+            icon: "✅",
+            title: "¡Correcto! Cambiaste a Antifraude",
+            body: "El cliente <strong>admitió uso de documento falso</strong> (aunque no para beneficio migratorio directo). La firma no puede tomar el caso.",
+            impact: "Se detuvo el caso, se reembolsó y se documentó la admisión. Se evitó presentar un caso basado total o parcialmente en identidad fraudulenta."
+          },
+          incorrect: {
+            icon: "❌",
+            title: "Respuesta incorrecta",
+            body: "La respuesta correcta era <strong>Cambiar a Antifraude</strong>. Ya hay admisión de documento falso, lo que activa Antifraude.",
+            impact: "El caso avanzó a evaluación con información comprometedora. Más adelante, al descubrirse el documento falso, la firma tuvo que retirarse, generando desgaste y riesgo ético."
+          }
+        },
+        points: 1
+      }
+    ]
+  },
+
+  // ─── CASO 2 ───────────────────────────────────────────────────────────────
+  {
+    id: 2,
+    title: "Caso 2 – Abogado con antecedentes fraudulentos",
+    badge: "🧪",
+    questions: [
+      {
+        qid: "2a",
+        part: 1,
+        scenario: "\"Mi caso lo llevó un abogado que tuvo problemas con migración por haber cometido varios fraudes antes. No sé qué pasó, pero ya no quiero problemas. Ustedes son mi segunda opción.\"",
+        question: "¿Qué protocolo aplicas?",
+        type: "protocol",
+        options: [
+          { id: "a", label: "Preventivo" },
+          { id: "b", label: "Antifraude directo" },
+          { id: "c", label: "Friendly" },
+          { id: "d", label: "No aplica" }
+        ],
+        correct: "a",
+        justification: {
+          question: "Justificación – selecciona la frase clave:",
+          options: [
+            { id: "j1", label: "\"Lo llevó un abogado fraudulento\"" },
+            { id: "j2", label: "\"No sé qué pasó\"" },
+            { id: "j3", label: "\"Segunda opción\"" }
+          ],
+          correct: "j2"
+        },
+        feedback: {
+          correct: {
+            icon: "✅",
+            title: "¡Correcto! Aplicaste Preventivo",
+            body: "Aplicaste <strong>Preventivo</strong> (no Antifraude automático). Mencionar que existió un abogado previo no es admisión de fraude, pero sí una bandera para investigar.",
+            impact: "Se investigó el caso anterior. Se descubrió que el cliente fue víctima de malas prácticas, no cómplice. El caso pudo continuar con advertencias claras."
+          },
+          incorrect: {
+            icon: "❌",
+            title: "Respuesta incorrecta",
+            body: "La respuesta correcta era <strong>Preventivo</strong>. Debes investigar antes de aplicar Antifraude automáticamente.",
+            impact: {
+              "b": "Cerraste el caso sin investigación. El cliente, que era víctima, perdió oportunidad de un proceso legítimo. La firma perdió un caso válido por sesgo.",
+              "c": "Aplicar Friendly ignora la bandera roja del abogado con antecedentes.",
+              "d": "No aplica ignora por completo una señal que requiere investigación."
+            }
+          }
+        },
+        points: 1
+      },
+      {
+        qid: "2b",
+        part: 2,
+        scenario: "El cliente agrega: <em>\"El abogado anterior me dijo que no pusiera tres salidas del país para que me dieran DACA. Yo no sabía que eso estaba mal.\"</em>",
+        question: "¿Actualizas el protocolo?",
+        type: "protocol",
+        options: [
+          { id: "a", label: "Mantener Preventivo" },
+          { id: "b", label: "Cambiar a Antifraude" },
+          { id: "c", label: "Cambiar a Friendly" },
+          { id: "d", label: "No aplica" }
+        ],
+        correct: "b",
+        justification: null,
+        openJustification: true,
+        feedback: {
+          correct: {
+            icon: "✅",
+            title: "¡Correcto! Cambiaste a Antifraude",
+            body: "Aunque el cliente no tuvo intención, <strong>admite haber participado en una omisión intencional</strong> para obtener un beneficio.",
+            impact: "Caso cerrado. Se explicó al cliente que, aunque fue víctima, participó en fraude. Se le recomendó consultar con abogado especializado en consecuencias de fraude pasado."
+          },
+          incorrect: {
+            icon: "❌",
+            title: "Respuesta incorrecta",
+            body: "La respuesta correcta era <strong>Cambiar a Antifraude</strong>. Ya hay admisión de conducta fraudulenta previa, aunque no intención actual.",
+            impact: "El caso siguió adelante, pero al presentarlo, USCIS descubrió la omisión pasada. El cliente quedó marcado y la firma enfrentó señalamientos."
+          }
+        },
+        points: 1
+      }
+    ]
+  },
+
+  // ─── CASO 3 ───────────────────────────────────────────────────────────────
+  {
+    id: 3,
+    title: "Caso 3 – Cliente indígena con apoyo familiar",
+    badge: "🧪",
+    questions: [
+      {
+        qid: "3a",
+        part: 1,
+        scenario: "Cliente mixteco, habla poco español. Viene con su hija, quien traduce. La hija dice: <em>\"Mi papá no recuerda bien las fechas, pero entró como en 2005 o 2006, no está seguro.\"</em>",
+        question: "¿Qué protocolo aplicas?",
+        type: "protocol",
+        options: [
+          { id: "a", label: "Preventivo" },
+          { id: "b", label: "Antifraude" },
+          { id: "c", label: "Friendly" },
+          { id: "d", label: "No aplica" }
+        ],
+        correct: "c",
+        justification: {
+          question: "Justificación – selecciona la frase clave:",
+          options: [
+            { id: "j1", label: "\"No recuerda bien las fechas\"" },
+            { id: "j2", label: "\"Viene con su hija\"" },
+            { id: "j3", label: "\"Habla poco español\"" }
+          ],
+          correct: "j3"
+        },
+        feedback: {
+          correct: {
+            icon: "✅",
+            title: "¡Correcto! Aplicaste Friendly",
+            body: "El cliente tiene <strong>barrera idiomática y de memoria</strong>; no hay indicios de fraude.",
+            impact: "Se evitaron malentendidos y se construyó un caso sólido con información verificada."
+          },
+          incorrect: {
+            icon: "❌",
+            title: "Respuesta incorrecta",
+            body: "La respuesta correcta era <strong>Friendly</strong>. No hay sospecha de fraude, solo dificultad de comunicación.",
+            impact: "Se envió un mensaje innecesario que confundió al cliente y retrasó la relación de confianza."
+          }
+        },
+        points: 1
+      },
+      {
+        qid: "3b",
+        part: 2,
+        scenario: "En la segunda cita, el cliente menciona que usó un nombre diferente en su primera entrada, pero <em>\"era el nombre de un amigo, no el mío.\"</em>",
+        question: "¿Actualizas el protocolo?",
+        type: "protocol",
+        options: [
+          { id: "a", label: "Mantener Friendly" },
+          { id: "b", label: "Cambiar a Preventivo" },
+          { id: "c", label: "Cambiar a Antifraude" }
+        ],
+        correct: "b",
+        justification: null,
+        openJustification: true,
+        feedback: {
+          correct: {
+            icon: "✅",
+            title: "¡Correcto! Cambiaste a Preventivo",
+            body: "Usar nombre falso es bandera roja, pero el cliente <strong>lo menciona abiertamente</strong> y no parece haber intención actual de engaño.",
+            impact: "Se activó protocolo preventivo, se explicaron riesgos y se documentó la admisión. El caso avanzó con advertencia y plan de contingencia."
+          },
+          incorrect: {
+            icon: "❌",
+            title: "Respuesta incorrecta",
+            body: "La respuesta correcta era <strong>Cambiar a Preventivo</strong>.",
+            impact: {
+              "a": "Subestimaste una admisión de uso de identidad falsa. El caso avanzó sin abordar el tema. En la entrevista, USCIS confrontó al cliente y el caso fue denegado por inconsistencia.",
+              "c": "Aplicar Antifraude es excesivo; el cliente no admite intención de fraude, solo reveló información transparentemente."
+            }
+          }
+        },
+        points: 1
+      }
+    ]
+  },
+
+  // ─── CASO 4 ───────────────────────────────────────────────────────────────
+  {
+    id: 4,
+    title: "Caso 4 – Coyote en 2014 y taxes desde 2012",
+    badge: "🧪",
+    questions: [
+      {
+        qid: "4a",
+        part: 1,
+        scenario: "\"Entré en 2014 con coyote, nunca crucé por migración. Pero cuando saqué mi licencia, usé taxes del 2012 para demostrar residencia.\"",
+        question: "¿Qué protocolo aplicas?",
+        type: "protocol",
+        options: [
+          { id: "a", label: "Preventivo" },
+          { id: "b", label: "Friendly" },
+          { id: "c", label: "Antifraude" },
+          { id: "d", label: "No aplica" }
+        ],
+        correct: "a",
+        justification: {
+          question: "Justificación – selecciona la frase clave:",
+          options: [
+            { id: "j1", label: "\"Entré con coyote\"" },
+            { id: "j2", label: "\"Usé taxes del 2012 cuando no estaba aquí\"" },
+            { id: "j3", label: "\"Nunca crucé por migración\"" }
+          ],
+          correct: "j2"
+        },
+        feedback: {
+          correct: {
+            icon: "✅",
+            title: "¡Correcto! Aplicaste Preventivo",
+            body: "El cliente usó <strong>información falsa para un trámite (licencia)</strong>, lo que indica posible disposición a repetir conducta.",
+            impact: "Se envió el disclaimer preventivo y se le explicó que no se puede usar información inconsistente en su caso migratorio. Se le pidió documentación real."
+          },
+          incorrect: {
+            icon: "❌",
+            title: "Respuesta incorrecta",
+            body: "La respuesta correcta era <strong>Preventivo</strong>. Esto no es confusión, es una acción deliberada con documento oficial, pero tampoco hay admisión directa de fraude migratorio.",
+            impact: "Al no advertirle, el cliente repitió la misma lógica en su solicitud migratoria y fue rechazado por inconsistencia."
+          }
+        },
+        points: 1
+      }
+    ]
+  },
+
+  // ─── CASO 5 ───────────────────────────────────────────────────────────────
+  {
+    id: 5,
+    title: "Caso 5 – Pasaporte enviado a Guatemala",
+    badge: "🧪",
+    questions: [
+      {
+        qid: "5a",
+        part: 1,
+        scenario: "\"Para evitar un castigo, mandé mi pasaporte a Guatemala dos veces mientras estaba aquí. Mi abogado anterior me dijo que así no me contaban el tiempo fuera, y prefiero hacer lo que sea necesario para que no tenga castigo, y en mi declaración podemos decir otra cosa.\"",
+        question: "¿Qué protocolo aplicas?",
+        type: "protocol",
+        options: [
+          { id: "a", label: "Preventivo" },
+          { id: "b", label: "Antifraude" },
+          { id: "c", label: "Friendly" }
+        ],
+        correct: "b",
+        justification: {
+          question: "Justificación – selecciona la frase clave:",
+          options: [
+            { id: "j1", label: "\"Mandé mi pasaporte a Guatemala\"" },
+            { id: "j2", label: "\"Para evitar un castigo\"" },
+            { id: "j3", label: "\"Mi abogado anterior me dijo\"" }
+          ],
+          correct: "j1"
+        },
+        feedback: {
+          correct: {
+            icon: "✅",
+            title: "¡Correcto! Aplicaste Antifraude",
+            body: "El cliente <strong>admite haber manipulado evidencia</strong> de su ubicación para evitar consecuencias migratorias.",
+            impact: "Caso cerrado de inmediato. Se explicó al cliente que esa conducta es fraude migratorio. Se reembolsó y se documentó la admisión."
+          },
+          incorrect: {
+            icon: "❌",
+            title: "Respuesta incorrecta",
+            body: "La respuesta correcta era <strong>Antifraude</strong>. Esto no es sospecha, es admisión de fraude.",
+            impact: "El caso siguió, pero al investigarse, se descubrió el envío de pasaporte. La firma tuvo que retirarse y enfrentó cuestionamientos internos."
+          }
+        },
+        points: 1
+      }
+    ]
+  },
+
+  // ─── CASO 6 ───────────────────────────────────────────────────────────────
+  {
+    id: 6,
+    title: "Caso 6 – Divorcio y nuevo matrimonio",
+    badge: "🧪",
+    questions: [
+      {
+        qid: "6a",
+        part: 1,
+        scenario: "\"Me divorcié de mi esposa por problemas, pero nos volvimos a casar años después. Ella es ciudadana. ¿Eso afecta?\"",
+        question: "¿Qué protocolo aplicas?",
+        type: "protocol",
+        options: [
+          { id: "a", label: "Preventivo" },
+          { id: "b", label: "No aplica" },
+          { id: "c", label: "Friendly" },
+          { id: "d", label: "Antifraude" }
+        ],
+        correct: "b",
+        justification: {
+          question: "Justificación – selecciona la frase clave:",
+          options: [
+            { id: "j1", label: "\"Me divorcié y volví a casar\"" },
+            { id: "j2", label: "\"Ella es ciudadana\"" },
+            { id: "j3", label: "\"¿Eso afecta?\"" }
+          ],
+          correct: "j3"
+        },
+        feedback: {
+          correct: {
+            icon: "✅",
+            title: "¡Correcto! Aplicaste No aplica",
+            body: "Es una <strong>situación personal sin indicios de fraude</strong>, y el cliente pregunta abiertamente.",
+            impact: "El caso avanzó sin protocolos. Se explicó que el matrimonio es legítimo si la relación es real, sin importar el divorcio previo."
+          },
+          incorrect: {
+            icon: "❌",
+            title: "Respuesta incorrecta",
+            body: "La respuesta correcta era <strong>No aplica</strong>. No hay nada sospechoso en volverse a casar con la misma persona.",
+            impact: "Se generó desconfianza innecesaria y el cliente casi busca otra firma."
+          }
+        },
+        points: 1
+      }
+    ]
+  },
+
+  // ─── CASO 7 ───────────────────────────────────────────────────────────────
+  {
+    id: 7,
+    title: "Caso 7 – Esposa quiere ayudar",
+    badge: "🧪",
+    questions: [
+      {
+        qid: "7a",
+        part: 1,
+        scenario: "\"Mi esposa me quiere ayudar a arreglar. Ella dice que por ser esposos, podemos hacerlo rápido. Tenemos un hijo abusivo.\"",
+        question: "¿Qué protocolo aplicas?",
+        type: "protocol",
+        options: [
+          { id: "a", label: "Preventivo" },
+          { id: "b", label: "Friendly" },
+          { id: "c", label: "Antifraude" },
+          { id: "d", label: "No aplica" }
+        ],
+        correct: "b",
+        justification: {
+          question: "Justificación – selecciona la frase clave:",
+          options: [
+            { id: "j1", label: "\"Podemos hacerlo rápido\"" },
+            { id: "j2", label: "\"Mi esposa es ciudadana\"" },
+            { id: "j3", label: "\"Me quiere ayudar\"" }
+          ],
+          correct: "j1"
+        },
+        feedback: {
+          correct: {
+            icon: "✅",
+            title: "¡Correcto! Aplicaste Friendly",
+            body: "Cuando el cliente menciona que su esposa lo quiere ayudar, aplica <strong>Friendly</strong> si el matrimonio es legítimo. Hay posible expectativa irreal, no fraude.",
+            impact: "Se envió el disclaimer friendly y se explicaron los tiempos reales del proceso. Se evitó que el cliente generara expectativas falsas."
+          },
+          incorrect: {
+            icon: "❌",
+            title: "Respuesta incorrecta",
+            body: "La respuesta correcta era <strong>Friendly</strong>. No hay bandera roja, solo entusiasmo o desconocimiento del proceso.",
+            impact: "El cliente sintió que lo trataban con desconfianza y se generó fricción innecesaria."
+          }
+        },
+        points: 1
+      }
+    ]
+  },
+
+  // ─── CASO 8 ───────────────────────────────────────────────────────────────
+  {
+    id: 8,
+    title: "Caso 8 – Cliente mayor con mala memoria",
+    badge: "🧪",
+    questions: [
+      {
+        qid: "8a",
+        part: 1,
+        scenario: "Cliente de 65 años: <em>\"Entré en los 90, pero no recuerdo bien las fechas. A veces iba y venía, pero ya ni me acuerdo.\"</em>",
+        question: "¿Qué protocolo aplicas?",
+        type: "protocol",
+        options: [
+          { id: "a", label: "Preventivo" },
+          { id: "b", label: "Friendly" },
+          { id: "c", label: "Antifraude" },
+          { id: "d", label: "No aplica" }
+        ],
+        correct: "b",
+        justification: {
+          question: "Justificación – selecciona la frase clave:",
+          options: [
+            { id: "j1", label: "\"No recuerdo bien las fechas\"" },
+            { id: "j2", label: "\"A veces iba y venía\"" },
+            { id: "j3", label: "\"65 años\"" }
+          ],
+          correct: "j3"
+        },
+        feedback: {
+          correct: {
+            icon: "✅",
+            title: "¡Correcto! Aplicaste Friendly",
+            body: "Esto aplica cuando han pasado muchos años y el cliente titubea por <strong>edad y falta de memoria</strong>, no por ocultar algo.",
+            impact: "Se activó friendly, se ofreció apoyo para reconstruir historial con registros. El cliente se sintió acompañado."
+          },
+          incorrect: {
+            icon: "❌",
+            title: "Respuesta incorrecta",
+            body: "La respuesta correcta era <strong>Friendly</strong>. No hay sospecha, solo falta de memoria por la edad.",
+            impact: "El cliente se sintió acusado y casi abandona el proceso."
+          }
+        },
+        points: 1
+      }
+    ]
+  },
+
+  // ─── CASO 9 ───────────────────────────────────────────────────────────────
+  {
+    id: 9,
+    title: "Caso 9 – Uso actual de NSS falso",
+    badge: "🧪",
+    questions: [
+      {
+        qid: "9a",
+        part: 1,
+        scenario: "\"Uso un número de seguro social actualmente para trabajar. No es mío, no sé de quién es, pero lo necesito para trabajar, igual podemos no decir eso en el caso, o decir que sí es mío.\"",
+        question: "¿Qué protocolo aplicas?",
+        type: "protocol",
+        options: [
+          { id: "a", label: "Preventivo" },
+          { id: "b", label: "Antifraude" },
+          { id: "c", label: "Friendly" },
+          { id: "d", label: "No aplica" }
+        ],
+        correct: "b",
+        justification: {
+          question: "Justificación – selecciona la frase clave:",
+          options: [
+            { id: "j1", label: "\"No es mío\"" },
+            { id: "j2", label: "\"Lo necesito para trabajar\"" },
+            { id: "j3", label: "\"No sé de quién es\"" }
+          ],
+          correct: "j1"
+        },
+        feedback: {
+          correct: {
+            icon: "✅",
+            title: "¡Correcto! Aplicaste Antifraude",
+            body: "El cliente <strong>admite usar identidad falsa activamente</strong> y propone ocultarlo.",
+            impact: "Caso cerrado. Se explicó que no se puede representar a alguien que usa documento falso. Se le orientó a regularizar su estatus sin usarlo."
+          },
+          incorrect: {
+            icon: "❌",
+            title: "Respuesta incorrecta",
+            body: "La respuesta correcta era <strong>Antifraude</strong>. Ya hay admisión de uso actual de documento falso.",
+            impact: "El caso siguió, pero al presentarlo, USCIS confrontó al cliente con su historial laboral. Caso denegado y cliente con antecedente."
+          }
+        },
+        points: 1
+      }
+    ]
+  },
+
+  // ─── CASO 10 ──────────────────────────────────────────────────────────────
+  {
+    id: 10,
+    title: "Caso 10 – Recomendación sin conocimiento del caso del amigo",
+    badge: "🧪",
+    questions: [
+      {
+        qid: "10a",
+        part: 1,
+        scenario: "\"Un amigo me dio su número. Dijo que son muy buenos. La verdad no sé si él tiene caso con ustedes o no.\"",
+        question: "¿Qué protocolo aplicas?",
+        type: "protocol",
+        options: [
+          { id: "a", label: "Preventivo" },
+          { id: "b", label: "Friendly" },
+          { id: "c", label: "Antifraude" },
+          { id: "d", label: "No aplica" }
+        ],
+        correct: "b",
+        justification: {
+          question: "Justificación – selecciona la frase clave:",
+          options: [
+            { id: "j1", label: "\"Un amigo me dio su número\"" },
+            { id: "j2", label: "\"No sé si él tiene caso\"" },
+            { id: "j3", label: "\"Son muy buenos\"" }
+          ],
+          correct: "j1"
+        },
+        feedback: {
+          correct: {
+            icon: "✅",
+            title: "¡Correcto! Aplicaste Friendly",
+            body: "Venir por <strong>recomendación sin conocimiento del caso del amigo</strong> activa Friendly.",
+            impact: "Se envió friendly reminder y se explicó que cada caso es único. El cliente se sintió bienvenido."
+          },
+          incorrect: {
+            icon: "❌",
+            title: "Respuesta incorrecta",
+            body: "La respuesta correcta era <strong>Friendly</strong>. No hay bandera roja, solo desconocimiento del proceso.",
+            impact: "El cliente sintió desconfianza y dudó en compartir información."
+          }
+        },
+        points: 1
+      }
+    ]
+  }
+];
+
+// Total questions: 13 (Casos 1,2,3 have 2 questions each = 6, Casos 4-10 = 7)
+var TOTAL_QUESTIONS = 13;
+var MIN_PASS_SCORE = 8.5; // out of 10
+var TIMER_SECONDS = 50;
+
+// Decision tendency analysis
+function getTendency(answers) {
+  var tooMuchAnti = 0, tooMuchFriendly = 0, balanced = 0, cleanCases = 0;
+  answers.forEach(function(a) {
+    if (!a) return;
+    if (a.selectedWasCorrect === false) {
+      var sel = a.selected;
+      if (sel === 'b' && a.correct !== 'b') tooMuchAnti++;
+      if ((sel === 'c') && a.correct !== 'c') tooMuchFriendly++;
+    } else {
+      if (a.correct === 'b') balanced++;
+      if (a.correct === 'b' && a.caseId >= 6) cleanCases++;
+    }
+  });
+
+  if (tooMuchAnti >= 3) return { label: "⚠️ Tendencia a sobrerreaccionar", desc: "Aplicaste Antifraude muy pronto en varios casos. Recuerda investigar antes de cerrar." };
+  if (tooMuchFriendly >= 3) return { label: "⚠️ Tendencia a subestimar el riesgo", desc: "Aplicaste Friendly en casos con banderas rojas. Mantén la alerta ante señales claras." };
+  return { label: "✅ Tendencia equilibrada y analítica", desc: "Identificaste bien los niveles de riesgo. Tu análisis es coherente y operativamente seguro." };
+}
+
+</script>
+  <script>
+/**
+ * Simulador Antifraude – v9 FINAL
+ * Triple-layer timer: Worker → Date.now polling → classic setInterval
+ * First layer that fires wins; others are immediately stopped.
+ */
+(function () {
+  'use strict';
+
+  var _dbg = { log: function(){} }; // production: logging disabled
+
+  var state = {
+    currentCaseIndex:0, currentQuestionIndex:0,
+    answers:[], totalCorrect:0, finished:false,
+    timerActive:false, timerStartedAt:0, timeLeft:0,
+    timerLayer:null, winnerChosen:false,
+    workerHandle:null, pollHandle:null, classicHandle:null,
+    protocolSelected:null, justSelected:null
+  };
+
+  var allQuestions = [];
+  CASES.forEach(function(c){ c.questions.forEach(function(q){ allQuestions.push({caseData:c,questionData:q}); }); });
+
+  var $ = function(s){ return document.querySelector(s); };
+  var $$ = function(s){ return document.querySelectorAll(s); };
+
+  // ── SCORM ──────────────────────────────────────────────────────────────────
+  function initSCORM(){ var ok=SCORM.init(); if(ok){SCORM.setStatus('incomplete');SCORM.commit();} return ok; }
+
+  function saveProgress(){
+    SCORM.setSuspendData({v:6,currentCaseIndex:state.currentCaseIndex,currentQuestionIndex:state.currentQuestionIndex,answers:state.answers,totalCorrect:state.totalCorrect,finished:state.finished});
+    SCORM.setLessonLocation(state.currentCaseIndex+','+state.currentQuestionIndex);
+  }
+
+  function restoreProgress(){
+    var data=SCORM.getSuspendData();
+    if(!data||data.v!==6) return false;
+    state.currentCaseIndex=data.currentCaseIndex||0;
+    state.currentQuestionIndex=data.currentQuestionIndex||0;
+    state.answers=data.answers||[];
+    state.totalCorrect=data.totalCorrect||0;
+    state.finished=data.finished||false;
+    return true;
+  }
+
+  function clearAndRestart(){
+    killAllTimers();
+    SCORM.setSuspendData({v:6}); SCORM.setLessonLocation(''); SCORM.setStatus('incomplete'); SCORM.commit();
+    state.currentCaseIndex=0; state.currentQuestionIndex=0; state.answers=[]; state.totalCorrect=0;
+    state.finished=false; state.protocolSelected=null; state.justSelected=null;
+    showSim(); renderQuestion();
+  }
+
+  function getGlobalIndex(){
+    var idx=0;
+    for(var c=0;c<state.currentCaseIndex;c++) idx+=CASES[c].questions.length;
+    return idx+state.currentQuestionIndex;
+  }
+
+  function getTotalAnswered(){ return state.answers.filter(function(a){return !!a;}).length; }
+
+  // ── Timer — triple layer ───────────────────────────────────────────────────
+  function startTimer(){
+    _dbg.log('startTimer() CALLED','#f0a500');
+    killAllTimers();
+    state.timerActive    = true;
+    state.timerStartedAt = Date.now();
+    state.timeLeft       = TIMER_SECONDS;
+
+    renderTimerDisplay(TIMER_SECONDS);
+    renderSatisfaction(TIMER_SECONDS);
+
+    // Single reliable interval: fires every 250ms, computes real elapsed time
+    // from Date.now() — immune to throttling because precision doesn't matter,
+    // only the wall-clock difference does.
+    state.pollHandle = window.setInterval(function(){
+      if(!state.timerActive){ _dbg.log('poll fired but timerActive=false','#ff6b6b'); return; }
+      _dbg.log('TICK elapsed='+((Date.now()-state.timerStartedAt)/1000).toFixed(2),'#51cf66');
+      var elapsed = (Date.now() - state.timerStartedAt) / 1000;
+      var left    = Math.round(TIMER_SECONDS - elapsed);
+      if(left < 0) left = 0;
+
+      // Update display on every poll (not just when second changes)
+      // so the bar moves smoothly even if a tick fires slightly late
+      if(left !== state.timeLeft || elapsed < 0.5){
+        state.timeLeft = left;
+        renderTimerDisplay(left);
+        renderSatisfaction(left);
+      }
+
+      if(left <= 0){
+        killAllTimers();
+        onTimerExpired();
+      }
+      _dbg.log('setInterval(250) registered','#f0a500');
+    }, 250);
+  }
+
+  function onTick(){
+    if(!state.timerActive) return;
+    var left=TIMER_SECONDS-Math.floor((Date.now()-state.timerStartedAt)/1000);
+    if(left<0) left=0;
+    state.timeLeft=left;
+    renderTimerDisplay(left); renderSatisfaction(left);
+    if(left<=0){ killAllTimers(); onTimerExpired(); }
+  }
+
+  function killAllTimers(){
+    state.timerActive = false;
+    if(state.pollHandle){
+      window.clearInterval(state.pollHandle);
+      state.pollHandle = null;
+    }
+  }
+
+  function onTimerExpired(){
+    var item=allQuestions[getGlobalIndex()]; if(!item) return;
+    var q=item.questionData;
+    $$('.option-btn').forEach(function(b){b.disabled=true;});
+    $$('.just-btn').forEach(function(b){b.disabled=true;});
+    var cb=$('.btn-continue'); if(cb) cb.disabled=true;
+    window.setTimeout(function(){ showFeedback(state.protocolSelected||'__timeout__',state.justSelected,q); },500);
+  }
+
+  // ── Display ────────────────────────────────────────────────────────────────
+  function pad2(n){ return n<10?'0'+n:''+n; }
+
+  function colorClass(t){
+    if(t<=10) return ' danger';
+    if(t<=Math.round(TIMER_SECONDS*0.5)) return ' warning';
+    return '';
+  }
+
+  function renderTimerDisplay(t){
+    var label=pad2(Math.floor(t/60))+':'+pad2(t%60);
+    var fraction=t/TIMER_SECONDS;
+    var offset=226*(1-fraction);
+    var cls=colorClass(t);
+    var baseColor=t<=10?'#ff6b6b':t<=Math.round(TIMER_SECONDS*0.5)?'#f0a500':'#4ecdc4';
+
+    // 1. Large text (most reliable across all browsers)
+    var txt=document.getElementById('timer-text');
+    if(txt){txt.textContent=label;txt.style.color=baseColor;}
+
+    // 2. Linear bar (pure CSS width, no SVG)
+    var bar=document.getElementById('timer-bar');
+    if(bar){bar.style.width=(fraction*100)+'%';bar.style.background=baseColor;}
+
+    // 3. SVG arc
+    var arc=$('.arc-fill'); var center=$('.timer-center');
+    if(arc){arc.style.strokeDashoffset=offset;if(cls)arc.setAttribute('class','arc-fill'+cls);else arc.setAttribute('class','arc-fill');}
+    if(center){center.textContent=label;if(cls)center.setAttribute('class','timer-center'+cls);else center.setAttribute('class','timer-center');}
+  }
+
+  function renderSatisfaction(t){
+    var thumb=$('.satisfaction-thumb'); if(!thumb) return;
+    thumb.style.left=((1-(t/TIMER_SECONDS))*90+5)+'%';
+  }
+
+  function resetSatisfaction(){
+    var thumb=$('.satisfaction-thumb'); if(thumb) thumb.style.left='5%';
+  }
+
+  // ── Render question ────────────────────────────────────────────────────────
+  function renderQuestion(){
+    try {
+    _dbg.log('renderQuestion() START idx='+getGlobalIndex(),'#51cf66');
+    var item=allQuestions[getGlobalIndex()]; if(!item){showResults();return;}
+    var c=item.caseData, q=item.questionData;
+    state.protocolSelected=null; state.justSelected=null;
+
+    $('.case-number-badge').textContent='Caso '+c.id;
+    $('.case-title').textContent=c.title.replace('Caso '+c.id+' – ','');
+
+    var partEl=$('.part-indicator');
+    if(c.questions.length>1){partEl.textContent='Parte '+q.part+' de '+c.questions.length;partEl.style.display='inline-block';}
+    else{partEl.style.display='none';}
+
+    $('.scenario-bubble .scenario-text').innerHTML=q.scenario;
+    $('.question-text').innerHTML=q.question;
+
+    var grid=$('.options-grid'); grid.innerHTML='';
+    var letters=['A','B','C','D'];
+    q.options.forEach(function(opt,i){
+      var btn=document.createElement('button');
+      btn.className='option-btn'; btn.dataset.id=opt.id;
+      btn.innerHTML='<span class="option-letter">'+letters[i]+'</span><span class="option-text">'+opt.label+'</span>';
+      btn.addEventListener('click',function(){onProtocolSelect(opt.id,q);});
+      grid.appendChild(btn);
+    });
+
+    var justArea=$('.justification-area'), openJust=$('.open-just-area');
+    justArea.classList.remove('visible'); openJust.classList.remove('visible');
+
+    if(q.justification){
+      $('.just-question-text').textContent=q.justification.question;
+      var justOpts=$('.just-options'); justOpts.innerHTML='';
+      q.justification.options.forEach(function(jopt){
+        var jbtn=document.createElement('button');
+        jbtn.className='just-btn'; jbtn.dataset.id=jopt.id; jbtn.textContent=jopt.label;
+        jbtn.addEventListener('click',function(){onJustSelect(jopt.id,q);});
+        justOpts.appendChild(jbtn);
+      });
+    } else if(q.openJustification){
+      var ta=$('.open-just-input'); if(ta) ta.value='';
+    }
+
+    var contBtn=$('.btn-continue'); if(contBtn) contBtn.disabled=true;
+    updateCaseNav(); updateProgress(); resetSatisfaction();
+
+    var mc=$('.main-content');
+    mc.classList.remove('fade-in'); void mc.offsetWidth; mc.classList.add('fade-in');
+    _dbg.log('about to call startTimer()','#51cf66');
+    startTimer();
+    } catch(e) {
+      console.error('renderQuestion() ERROR:', e);
+      alert('ERROR in renderQuestion: ' + e.message + ' - Check console');
+    }
+  }
+
+  // ── Protocol / justification selection ────────────────────────────────────
+  function onProtocolSelect(selectedId,q){
+    if(state.protocolSelected) return;
+    state.protocolSelected=selectedId;
+    // Timer keeps running — do NOT killAllTimers here
+    $$('.option-btn').forEach(function(btn){
+      btn.disabled=true;
+      if(btn.dataset.id===q.correct) btn.classList.add('correct');
+      else if(btn.dataset.id===selectedId&&selectedId!==q.correct) btn.classList.add('incorrect');
+    });
+    if(q.justification){
+      $('.justification-area').classList.add('visible');
+    } else if(q.openJustification){
+      $('.open-just-area').classList.add('visible');
+      var cb=$('.btn-continue'); if(cb) cb.disabled=false;
+    } else {
+      killAllTimers();
+      window.setTimeout(function(){showFeedback(selectedId,null,q);},300);
+    }
+  }
+
+  function onJustSelect(justId,q){
+    if(state.justSelected) return;
+    state.justSelected=justId;
+    killAllTimers();
+    $$('.just-btn').forEach(function(btn){
+      btn.disabled=true;
+      if(btn.dataset.id===q.justification.correct) btn.classList.add('correct');
+      else if(btn.dataset.id===justId&&justId!==q.justification.correct) btn.classList.add('incorrect');
+    });
+    window.setTimeout(function(){showFeedback(state.protocolSelected,justId,q);},350);
+  }
+
+  // ── Feedback ───────────────────────────────────────────────────────────────
+  function showFeedback(proto,just,q){
+    var isCorrect=proto===q.correct, fb=q.feedback;
+    var overlay=$('.feedback-overlay');
+
+    if(isCorrect){
+      $('.feedback-icon').textContent=fb.correct.icon;
+      $('.feedback-title').textContent=fb.correct.title;
+      $('.feedback-title').className='feedback-title correct-title';
+      $('.feedback-body').innerHTML=fb.correct.body;
+      $('.feedback-impact-text').innerHTML=fb.correct.impact;
+    } else {
+      $('.feedback-icon').textContent=fb.incorrect.icon;
+      $('.feedback-title').textContent=fb.incorrect.title;
+      $('.feedback-title').className='feedback-title incorrect-title';
+      $('.feedback-body').innerHTML=fb.incorrect.body;
+      var txt='';
+      if(typeof fb.incorrect.impact==='string'){txt=fb.incorrect.impact;}
+      else if(fb.incorrect.impact&&fb.incorrect.impact[proto]){txt=fb.incorrect.impact[proto];}
+      else if(fb.incorrect.impact){var k=Object.keys(fb.incorrect.impact);if(k.length)txt=fb.incorrect.impact[k[0]];}
+      $('.feedback-impact-text').innerHTML=txt;
+    }
+
+    state.answers.push({qid:q.qid,caseId:q.qid.replace(/[ab]/,''),selected:proto,correct:q.correct,selectedWasCorrect:isCorrect});
+    if(isCorrect) state.totalCorrect++;
+
+    var oldBtn=$('.feedback-next-btn');
+    var newBtn=oldBtn.cloneNode(true);
+    oldBtn.parentNode.replaceChild(newBtn,oldBtn);
+    newBtn.addEventListener('click',function(){overlay.classList.remove('show');advanceQuestion();});
+
+    overlay.classList.add('show');
+    saveProgress();
+  }
+
+  function advanceQuestion(){
+    state.currentQuestionIndex++;
+    if(state.currentQuestionIndex>=CASES[state.currentCaseIndex].questions.length){
+      state.currentCaseIndex++; state.currentQuestionIndex=0;
+    }
+    if(state.currentCaseIndex>=CASES.length) showResults(); else renderQuestion();
+  }
+
+  // ── Nav / progress ─────────────────────────────────────────────────────────
+  function updateProgress(){
+    var fill=$('.progress-fill');
+    if(fill) fill.style.width=(getTotalAnswered()/TOTAL_QUESTIONS*100)+'%';
+  }
+
+  function updateCaseNav(){
+    $$('.case-nav-item').forEach(function(item){
+      item.classList.remove('active','done');
+      var i=parseInt(item.dataset.caseIdx,10);
+      if(i<state.currentCaseIndex) item.classList.add('done');
+      else if(i===state.currentCaseIndex) item.classList.add('active');
+    });
+  }
+
+  function buildCaseNav(){
+    var list=$('.case-nav-list'); list.innerHTML='';
+    CASES.forEach(function(c,i){
+      var el=document.createElement('div');
+      el.className='case-nav-item'; el.dataset.caseIdx=i;
+      el.innerHTML='<span class="case-dot"></span><span class="case-nav-text">'+c.title+'</span>';
+      list.appendChild(el);
+    });
+  }
+
+  // ── Results ────────────────────────────────────────────────────────────────
+  function showResults(){
+    killAllTimers(); state.finished=true;
+    var raw=state.totalCorrect;
+    var score=parseFloat(((raw/TOTAL_QUESTIONS)*10).toFixed(1));
+    var passed=score>=MIN_PASS_SCORE;
+
+    SCORM.setScore(score,0,10); SCORM.setStatus(passed?'passed':'failed');
+    SCORM.setSuspendData({v:6,currentCaseIndex:CASES.length,currentQuestionIndex:0,answers:state.answers,totalCorrect:raw,finished:true});
+    SCORM.commit(); SCORM.finish();
+
+    $('#screen-sim').classList.remove('active');
+    $('#screen-results').classList.add('active');
+
+    $('.score-number').textContent=score.toFixed(1);
+    var sf=$('.score-arc-fill');
+    if(sf){sf.style.stroke=passed?'#51cf66':'#ff6b6b';window.setTimeout(function(){sf.style.strokeDashoffset=440-(440*(score/10));},100);}
+
+    var st=$('.results-status');
+    st.textContent=passed?'✓ Aprobado':'✗ No aprobado';
+    st.className='results-status '+(passed?'status-pass':'status-fail');
+
+    $('.stat-correct').textContent=raw;
+    $('.stat-incorrect').textContent=TOTAL_QUESTIONS-raw;
+    $('.stat-total').textContent=TOTAL_QUESTIONS;
+    $('.results-title').textContent=passed?'¡Excelente trabajo!':'Necesitas practicar más';
+
+    var tb=$('.tendency-block');
+    if(score>=MIN_PASS_SCORE){
+      var t=getTendency(state.answers);
+      $('.tendency-label').textContent=t.label; $('.tendency-desc').textContent=t.desc;
+      if(tb) tb.style.display='';
+    } else { if(tb) tb.style.display='none'; }
+
+    var rg=$('.review-grid'); rg.innerHTML='';
+    state.answers.forEach(function(a,i){
+      var d=document.createElement('div');
+      d.className='review-dot '+(a.selectedWasCorrect?'correct-dot':'incorrect-dot');
+      d.textContent=i+1; d.title='P'+(i+1)+': '+(a.selectedWasCorrect?'Correcta':'Incorrecta');
+      rg.appendChild(d);
+    });
+
+    var rb=$('#btn-restart');
+    if(rb){var nb=rb.cloneNode(true);rb.parentNode.replaceChild(nb,rb);nb.addEventListener('click',clearAndRestart);}
+  }
+
+  function showIntro(){ _dbg.log('showIntro() called','#74c0fc'); $('#screen-intro').classList.add('active');$('#screen-sim').classList.remove('active');$('#screen-results').classList.remove('active');}
+  function showSim(){ _dbg.log('showSim() called','#51cf66'); $('#screen-intro').classList.remove('active');$('#screen-sim').classList.add('active');$('#screen-results').classList.remove('active');}
+
+  // ── Init ───────────────────────────────────────────────────────────────────
+  function init(){
+    _dbg.log('init() called','#74c0fc');
+    initSCORM(); buildCaseNav();
+    var restored=restoreProgress();
+    _dbg.log('restored='+restored+' finished='+state.finished+' caseIdx='+state.currentCaseIndex,'#74c0fc');
+    if(restored&&state.finished){showResults();return;}
+    if(restored&&(state.currentCaseIndex>0||state.currentQuestionIndex>0)){showSim();renderQuestion();return;}
+    showIntro();
+    var sb=$('#btn-start'); if(sb){ _dbg.log('btn-start found, adding listener','#74c0fc'); sb.addEventListener('click',function(){ _dbg.log('btn-start CLICKED','#51cf66'); showSim(); renderQuestion(); }); } else { _dbg.log('btn-start NOT FOUND','#ff6b6b'); }
+    var cb=$('.btn-continue');
+    if(cb){cb.addEventListener('click',function(){var item=allQuestions[getGlobalIndex()];if(!item)return;killAllTimers();showFeedback(state.protocolSelected,null,item.questionData);});}
+    window.addEventListener('beforeunload',function(){SCORM.commit();});
+  }
+
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init);
+  else init();
+})();
+
+</script>
+
+</body>
+</html>
