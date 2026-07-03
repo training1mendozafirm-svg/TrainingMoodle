@@ -1,0 +1,1901 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Políticas Antifraude (SCC) — The Mendoza Law Firm</title>
+
+<script>
+// ══════════════════════════════════════════════════
+// SCORM 1.2 API WRAPPER
+// ══════════════════════════════════════════════════
+var SCORM = (function() {
+  var API = null;
+  var initialized = false;
+  var finished = false;
+
+  function findAPI(win) {
+    var tries = 0;
+    while (tries < 10) {
+      var hasAPI = false;
+      try { hasAPI = !!win.API; } catch (e) { break; } // cross-origin: no seguir subiendo
+      if (hasAPI) break;
+      tries++;
+      try {
+        if (win.parent && win.parent !== win) win = win.parent;
+        else break;
+      } catch (e) { break; }
+    }
+    try { return win.API || null; } catch (e) { return null; }
+  }
+
+  function getAPI() {
+    if (API) return API;
+    try { API = findAPI(window); } catch (e) { API = null; }
+    if (!API) {
+      try { if (window.opener) API = findAPI(window.opener); } catch (e) { /* ignore */ }
+    }
+    return API;
+  }
+
+  function init() {
+    var api = getAPI();
+    if (!api) { console.warn('SCORM API not found — running in standalone mode'); return false; }
+    var result = api.LMSInitialize('');
+    initialized = (result === 'true' || result === true);
+    if (initialized) {
+      api.LMSSetValue('cmi.core.lesson_status', 'incomplete');
+      api.LMSCommit('');
+    }
+    return initialized;
+  }
+
+  function setValue(key, val) {
+    var api = getAPI();
+    if (!api || !initialized) return false;
+    api.LMSSetValue(key, String(val));
+    api.LMSCommit('');
+    return true;
+  }
+
+  function finish(score) {
+    if (finished) return;
+    var api = getAPI();
+    if (!api || !initialized) return;
+    // score 0-100
+    var scaled = Math.round(Math.max(0, Math.min(100, score)));
+    api.LMSSetValue('cmi.core.score.raw', scaled);
+    api.LMSSetValue('cmi.core.score.min', '0');
+    api.LMSSetValue('cmi.core.score.max', '100');
+    api.LMSSetValue('cmi.core.lesson_status', scaled >= 85 ? 'passed' : 'failed');
+    api.LMSSetValue('cmi.core.exit', 'suspend');
+    api.LMSCommit('');
+    api.LMSFinish('');
+    finished = true;
+  }
+
+  function suspend(location) {
+    var api = getAPI();
+    if (!api || !initialized) return;
+    api.LMSSetValue('cmi.core.lesson_location', location || '0');
+    api.LMSSetValue('cmi.core.exit', 'suspend');
+    api.LMSCommit('');
+  }
+
+  // Init on load
+  window.addEventListener('load', function() { init(); });
+  // Suspend on unload if not finished
+  window.addEventListener('beforeunload', function() {
+    var api = getAPI();
+    if (api && initialized && !finished) {
+      api.LMSSetValue('cmi.core.exit', 'suspend');
+      api.LMSCommit('');
+      api.LMSFinish('');
+    }
+  });
+
+  return { init, setValue, finish, suspend };
+})();
+</script>
+
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --lila:       #6B4E8E;
+    --lila-dark:  #4A2E6E;
+    --lila-light: #9B7EBD;
+    --lila-pale:  #EDE6F5;
+    --gold:       #C9A84C;
+    --gold-light: #E8C97A;
+    --gold-dark:  #9A7530;
+    --cream:      #FAF6EE;
+    --cream-dark: #F0E8D8;
+    --text-dark:  #2C1E3E;
+    --text-mid:   #5A4A6E;
+    --text-light: #8A7AA0;
+    --white:      #FFFFFF;
+    --sidebar-w:  260px;
+    --radius:     10px;
+    --shadow:     0 4px 20px rgba(75,46,110,0.13);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Lato', sans-serif;
+    background: var(--cream);
+    color: var(--text-dark);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── COVER SCREEN ─────────────────────────────────── */
+  #cover {
+    position: fixed; inset: 0; z-index: 200;
+    background: linear-gradient(135deg, var(--lila-dark) 0%, var(--lila) 50%, var(--lila-light) 100%);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 2rem;
+    transition: opacity .7s ease, transform .7s ease;
+  }
+  #cover.hidden { opacity: 0; transform: scale(1.04); pointer-events: none; }
+
+  .cover-logo { width: 120px; margin-bottom: 2rem; filter: brightness(0) invert(1); opacity: .9; }
+  .cover-ornament { color: var(--gold); font-size: 1.4rem; letter-spacing: 6px; margin-bottom: 1rem; opacity: .7; }
+  .cover-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.2rem, 5vw, 3.6rem);
+    color: var(--white);
+    line-height: 1.15;
+    margin-bottom: .6rem;
+  }
+  .cover-subtitle {
+    font-size: 1rem; color: rgba(255,255,255,.75);
+    letter-spacing: 2px; text-transform: uppercase;
+    margin-bottom: 2.5rem;
+  }
+  .cover-objective {
+    max-width: 580px;
+    background: rgba(255,255,255,.12);
+    border: 1px solid rgba(255,255,255,.2);
+    border-radius: var(--radius);
+    padding: 1.4rem 2rem;
+    color: rgba(255,255,255,.9);
+    font-size: .97rem;
+    line-height: 1.6;
+    margin-bottom: 2.5rem;
+  }
+  .cover-objective strong { color: var(--gold-light); }
+
+  .btn-start {
+    background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
+    color: var(--lila-dark);
+    border: none; border-radius: 50px;
+    padding: .9rem 3rem;
+    font-family: 'Lato', sans-serif;
+    font-size: 1rem; font-weight: 700;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    cursor: pointer;
+    box-shadow: 0 6px 24px rgba(201,168,76,.4);
+    transition: transform .2s, box-shadow .2s;
+  }
+  .btn-start:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(201,168,76,.5); }
+
+  /* ── MAIN LAYOUT ───────────────────────────────────── */
+  #app { display: none; height: 100vh; }
+  #app.visible { display: flex; }
+
+  /* ── SIDEBAR ───────────────────────────────────────── */
+  #sidebar {
+    width: var(--sidebar-w);
+    flex-shrink: 0;
+    background: linear-gradient(180deg, var(--lila-dark) 0%, #3A1E5A 100%);
+    display: flex; flex-direction: column;
+    overflow-y: auto;
+    position: sticky; top: 0; height: 100vh;
+  }
+  .sidebar-logo-wrap {
+    padding: 1.6rem 1.4rem 1rem;
+    border-bottom: 1px solid rgba(255,255,255,.1);
+    display: flex; align-items: center; gap: .8rem;
+  }
+  .sidebar-logo { width: 38px; filter: brightness(0) invert(1); opacity: .85; }
+  .sidebar-firm-name { font-size: .65rem; color: rgba(255,255,255,.55); letter-spacing: 1.5px; text-transform: uppercase; line-height: 1.3; }
+
+  .sidebar-nav { flex: 1; padding: .8rem 0; }
+
+  .nav-item {
+    display: flex; align-items: flex-start; gap: .7rem;
+    padding: .75rem 1.2rem;
+    cursor: pointer;
+    transition: background .2s;
+    border-left: 3px solid transparent;
+    text-decoration: none;
+  }
+  .nav-item:hover { background: rgba(255,255,255,.07); }
+  .nav-item.active {
+    background: rgba(201,168,76,.15);
+    border-left-color: var(--gold);
+  }
+  .nav-num {
+    width: 22px; height: 22px;
+    background: rgba(255,255,255,.12);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .65rem; font-weight: 700;
+    color: rgba(255,255,255,.6);
+    flex-shrink: 0; margin-top: 1px;
+  }
+  .nav-item.active .nav-num {
+    background: var(--gold);
+    color: var(--lila-dark);
+  }
+  .nav-item.done .nav-num {
+    background: rgba(155,126,189,.4);
+    color: var(--lila-pale);
+  }
+  .nav-text { font-size: .78rem; color: rgba(255,255,255,.65); line-height: 1.35; }
+  .nav-item.active .nav-text { color: var(--white); font-weight: 700; }
+
+  .sidebar-progress {
+    padding: 1rem 1.4rem;
+    border-top: 1px solid rgba(255,255,255,.1);
+  }
+  .prog-label { font-size: .68rem; color: rgba(255,255,255,.4); text-transform: uppercase; letter-spacing: 1px; margin-bottom: .5rem; }
+  .prog-bar-bg { background: rgba(255,255,255,.1); border-radius: 50px; height: 5px; }
+  .prog-bar-fill { background: linear-gradient(90deg, var(--gold), var(--gold-light)); border-radius: 50px; height: 5px; transition: width .5s ease; }
+  .prog-pct { font-size: .72rem; color: var(--gold-light); margin-top: .4rem; }
+
+  /* ── MAIN CONTENT ──────────────────────────────────── */
+  #main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 2.5rem 3rem;
+    max-width: 900px;
+  }
+
+  .section { display: none; animation: fadeIn .4s ease; }
+  .section.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ── SECTION HEADER ────────────────────────────────── */
+  .sec-header {
+    display: flex; align-items: center; gap: 1rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1.2rem;
+    border-bottom: 2px solid var(--cream-dark);
+  }
+  .sec-badge {
+    width: 48px; height: 48px;
+    background: linear-gradient(135deg, var(--lila), var(--lila-light));
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .sec-badge svg { width: 22px; height: 22px; fill: none; stroke: #fff; stroke-width: 2; }
+  .sec-label { font-size: .7rem; color: var(--lila-light); text-transform: uppercase; letter-spacing: 2px; font-weight: 700; }
+  .sec-title { font-family: 'Playfair Display', serif; font-size: 1.8rem; color: var(--lila-dark); line-height: 1.2; }
+
+  /* ── CONTENT CARDS ─────────────────────────────────── */
+  .card {
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 1.6rem 2rem;
+    margin-bottom: 1.4rem;
+  }
+  .card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.15rem;
+    color: var(--lila-dark);
+    margin-bottom: .8rem;
+    display: flex; align-items: center; gap: .5rem;
+  }
+  .card-title::before {
+    content: '';
+    display: inline-block;
+    width: 4px; height: 18px;
+    background: var(--gold);
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+  .card p { font-size: .93rem; line-height: 1.7; color: var(--text-mid); margin-bottom: .7rem; }
+  .card p:last-child { margin-bottom: 0; }
+
+  .highlight-box {
+    background: var(--lila-pale);
+    border-left: 4px solid var(--lila);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: 1rem 1.4rem;
+    margin: 1rem 0;
+    font-size: .9rem;
+    color: var(--lila-dark);
+    line-height: 1.6;
+  }
+  .gold-box {
+    background: linear-gradient(135deg, #FDF8EC, #FFF3CC);
+    border-left: 4px solid var(--gold);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: 1rem 1.4rem;
+    margin: 1rem 0;
+    font-size: .9rem;
+    color: var(--text-dark);
+    line-height: 1.6;
+  }
+  .gold-box strong { color: var(--gold-dark); }
+  .warning-box {
+    background: #FFF5F5;
+    border-left: 4px solid #C0392B;
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: 1rem 1.4rem;
+    margin: 1rem 0;
+    font-size: .9rem; color: #7B241C; line-height: 1.6;
+  }
+
+  .list-styled { list-style: none; margin: .6rem 0 .6rem 0; }
+  .list-styled li {
+    padding: .4rem 0 .4rem 1.4rem;
+    position: relative;
+    font-size: .9rem; color: var(--text-mid); line-height: 1.6;
+  }
+  .list-styled li::before {
+    content: '';
+    position: absolute; left: 0; top: .75rem;
+    width: 6px; height: 6px;
+    background: var(--gold);
+    border-radius: 50%;
+  }
+
+  /* Scenario card */
+  .scenario-card {
+    background: linear-gradient(135deg, var(--lila-dark), #3A1E5A);
+    border-radius: var(--radius);
+    padding: 1.8rem 2rem;
+    margin: 1.4rem 0;
+    color: var(--white);
+  }
+  .scenario-label { font-size: .7rem; color: var(--gold-light); text-transform: uppercase; letter-spacing: 2px; margin-bottom: .6rem; font-weight: 700; }
+  .scenario-card p { color: rgba(255,255,255,.85); font-size: .93rem; line-height: 1.7; margin: 0; }
+
+  /* Tags */
+  .tag-row { display: flex; flex-wrap: wrap; gap: .5rem; margin: .8rem 0; }
+  .tag {
+    padding: .25rem .8rem;
+    border-radius: 50px;
+    font-size: .73rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .5px;
+  }
+  .tag-lila { background: var(--lila-pale); color: var(--lila-dark); }
+  .tag-gold { background: #FDF3D0; color: var(--gold-dark); }
+  .tag-red  { background: #FDECEA; color: #C0392B; }
+
+  /* 3-col grid */
+  .grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; margin: 1.2rem 0; }
+  .grid-2 { display: grid; grid-template-columns: repeat(2,1fr); gap: 1rem; margin: 1.2rem 0; }
+  @media(max-width:700px){ .grid-3,.grid-2 { grid-template-columns: 1fr; } }
+
+  .mini-card {
+    background: var(--cream);
+    border-radius: var(--radius);
+    padding: 1.1rem 1.2rem;
+    border: 1px solid var(--cream-dark);
+  }
+  .mini-card .mc-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem; color: var(--lila-light);
+    line-height: 1; margin-bottom: .4rem;
+  }
+  .mini-card .mc-title { font-size: .82rem; font-weight: 700; color: var(--lila-dark); margin-bottom: .4rem; }
+  .mini-card .mc-text { font-size: .8rem; color: var(--text-mid); line-height: 1.5; }
+
+  /* Law cite */
+  .law-cite {
+    display: inline-flex; align-items: center; gap: .4rem;
+    background: var(--lila-pale); color: var(--lila-dark);
+    border-radius: 4px; padding: .15rem .6rem;
+    font-size: .78rem; font-weight: 700;
+    margin: .2rem;
+  }
+
+  /* Disciplinary table */
+  .disc-table { width: 100%; border-collapse: collapse; font-size: .85rem; margin: 1rem 0; }
+  .disc-table th { background: var(--lila); color: var(--white); padding: .7rem 1rem; text-align: left; font-weight: 700; }
+  .disc-table td { padding: .65rem 1rem; border-bottom: 1px solid var(--cream-dark); color: var(--text-mid); vertical-align: top; }
+  .disc-table tr:last-child td { border-bottom: none; }
+  .disc-table tr:nth-child(even) td { background: var(--cream); }
+
+  /* ── EXERCISES ─────────────────────────────────────── */
+  .exercise-block {
+    background: var(--white);
+    border-radius: var(--radius);
+    border: 2px solid var(--lila-pale);
+    padding: 1.8rem 2rem;
+    margin: 2rem 0;
+  }
+  .ex-header {
+    display: flex; align-items: center; gap: .7rem;
+    margin-bottom: 1.4rem;
+  }
+  .ex-icon {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--lila), var(--lila-light));
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .ex-icon svg { width: 18px; height: 18px; fill: none; stroke: white; stroke-width: 2; }
+  .ex-title { font-family: 'Playfair Display', serif; font-size: 1.05rem; color: var(--lila-dark); }
+  .ex-subtitle { font-size: .75rem; color: var(--lila-light); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
+
+  .question-block { margin-bottom: 1.6rem; }
+  .question-text { font-size: .95rem; font-weight: 700; color: var(--text-dark); margin-bottom: .9rem; line-height: 1.5; }
+  .question-num { color: var(--lila-light); margin-right: .4rem; }
+
+  .options { display: flex; flex-direction: column; gap: .5rem; }
+  .option {
+    display: flex; align-items: flex-start; gap: .7rem;
+    padding: .75rem 1rem;
+    border-radius: 8px;
+    border: 2px solid var(--cream-dark);
+    cursor: pointer;
+    transition: border-color .2s, background .2s;
+    font-size: .9rem; color: var(--text-mid); line-height: 1.45;
+  }
+  .option:hover { border-color: var(--lila-light); background: var(--lila-pale); }
+  .option.selected { border-color: var(--lila); background: var(--lila-pale); color: var(--lila-dark); }
+  .option.correct { border-color: #27AE60; background: #EAFAF1; color: #1E8449; }
+  .option.wrong   { border-color: #C0392B; background: #FDECEA; color: #922B21; }
+  .option-letter {
+    width: 22px; height: 22px;
+    background: var(--cream-dark);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .73rem; font-weight: 700;
+    flex-shrink: 0;
+    color: var(--text-mid);
+  }
+  .option.selected .option-letter { background: var(--lila); color: #fff; }
+  .option.correct .option-letter  { background: #27AE60; color: #fff; }
+  .option.wrong .option-letter    { background: #C0392B; color: #fff; }
+
+  .tf-options { display: flex; gap: .8rem; }
+  .tf-btn {
+    flex: 1; padding: .75rem;
+    border-radius: 8px;
+    border: 2px solid var(--cream-dark);
+    background: var(--cream);
+    cursor: pointer; font-size: .9rem; font-weight: 700;
+    color: var(--text-mid); text-align: center;
+    transition: all .2s;
+  }
+  .tf-btn:hover { border-color: var(--lila-light); }
+  .tf-btn.selected { border-color: var(--lila); background: var(--lila-pale); color: var(--lila-dark); }
+  .tf-btn.correct  { border-color: #27AE60; background: #EAFAF1; color: #1E8449; }
+  .tf-btn.wrong    { border-color: #C0392B; background: #FDECEA; color: #922B21; }
+
+  .feedback-box {
+    border-radius: 8px; padding: .9rem 1.1rem;
+    margin-top: .7rem; font-size: .88rem; line-height: 1.5;
+    display: none;
+  }
+  .feedback-box.show { display: block; }
+  .feedback-correct { background: #EAFAF1; border: 1px solid #27AE60; color: #1E8449; }
+  .feedback-wrong   { background: #FDECEA; border: 1px solid #C0392B; color: #922B21; }
+
+  .btn-check {
+    background: linear-gradient(135deg, var(--lila), var(--lila-light));
+    color: white; border: none; border-radius: 8px;
+    padding: .7rem 1.8rem; font-size: .9rem; font-weight: 700;
+    cursor: pointer; margin-top: 1rem;
+    transition: opacity .2s, transform .2s;
+  }
+  .btn-check:hover { opacity: .9; transform: translateY(-1px); }
+  .btn-check:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+
+  .ex-score-display {
+    display: none; text-align: center;
+    padding: 1.2rem; margin-top: 1rem;
+    background: var(--lila-pale); border-radius: var(--radius);
+  }
+  .ex-score-display.show { display: block; }
+  .ex-score-num { font-family: 'Playfair Display', serif; font-size: 2.5rem; color: var(--lila-dark); }
+  .ex-score-label { font-size: .8rem; color: var(--lila-light); text-transform: uppercase; letter-spacing: 1px; }
+
+  /* ── NAV BUTTONS ──────────────────────────────────── */
+  .section-nav {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 2rem 0 3rem;
+    border-top: 1px solid var(--cream-dark);
+    margin-top: 2rem;
+  }
+  .btn-nav {
+    display: flex; align-items: center; gap: .5rem;
+    padding: .7rem 1.6rem; border-radius: 8px;
+    font-size: .88rem; font-weight: 700;
+    cursor: pointer; transition: all .2s;
+    border: 2px solid transparent;
+  }
+  .btn-prev { background: var(--cream); color: var(--text-mid); border-color: var(--cream-dark); }
+  .btn-prev:hover { border-color: var(--lila-light); color: var(--lila); }
+  .btn-next { background: linear-gradient(135deg, var(--lila), var(--lila-light)); color: white; }
+  .btn-next:hover { opacity: .9; transform: translateY(-1px); }
+  .btn-nav:disabled { opacity: .35; cursor: not-allowed; transform: none; }
+
+  /* ── FINAL EXAM ─────────────────────────────────────── */
+  #final-exam-intro { text-align: center; padding: 2rem 0; }
+  .exam-icon-big {
+    width: 80px; height: 80px;
+    background: linear-gradient(135deg, var(--lila), var(--lila-light));
+    border-radius: 20px;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1.5rem;
+  }
+  .exam-icon-big svg { width: 38px; height: 38px; fill: none; stroke: white; stroke-width: 1.8; }
+
+  .exam-meta-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; margin: 2rem 0; }
+  .exam-meta-card {
+    background: var(--cream);
+    border-radius: var(--radius);
+    padding: 1.2rem;
+    border: 1px solid var(--cream-dark);
+    text-align: center;
+  }
+  .em-num { font-family: 'Playfair Display', serif; font-size: 1.8rem; color: var(--lila); }
+  .em-label { font-size: .75rem; color: var(--text-light); text-transform: uppercase; letter-spacing: 1px; }
+
+  #final-exam-questions { display: none; }
+  #final-exam-result   { display: none; }
+
+  .result-circle {
+    width: 140px; height: 140px;
+    border-radius: 50%;
+    background: conic-gradient(var(--lila) 0%, var(--lila) var(--pct), var(--cream-dark) var(--pct));
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1.5rem;
+    position: relative;
+  }
+  .result-inner {
+    width: 110px; height: 110px;
+    background: var(--white);
+    border-radius: 50%;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+  }
+  .result-pct-num { font-family: 'Playfair Display', serif; font-size: 2rem; color: var(--lila-dark); line-height: 1; }
+  .result-pct-label { font-size: .65rem; color: var(--text-light); text-transform: uppercase; }
+
+  .score-breakdown {
+    background: var(--cream);
+    border-radius: var(--radius);
+    padding: 1.4rem 1.8rem;
+    margin: 1.5rem 0;
+  }
+  .sb-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: .6rem 0;
+    border-bottom: 1px solid var(--cream-dark);
+    font-size: .9rem;
+  }
+  .sb-row:last-child { border-bottom: none; }
+  .sb-label { color: var(--text-mid); }
+  .sb-val   { font-weight: 700; color: var(--lila-dark); }
+  .sb-total { font-family: 'Playfair Display', serif; font-size: 1.1rem; }
+
+  .result-pass { color: #1E8449; font-size: 1.1rem; font-weight: 700; text-align: center; padding: .8rem; }
+  .result-fail { color: #C0392B; font-size: 1.1rem; font-weight: 700; text-align: center; padding: .8rem; }
+
+  .btn-restart {
+    display: block; margin: 0 auto;
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    color: var(--lila-dark); border: none; border-radius: 8px;
+    padding: .75rem 2rem; font-size: .9rem; font-weight: 700;
+    cursor: pointer; transition: all .2s;
+  }
+  .btn-restart:hover { opacity: .9; transform: translateY(-1px); }
+
+  /* Divider */
+  .section-divider {
+    height: 1px; background: var(--cream-dark); margin: 2rem 0;
+  }
+
+  /* Protocol cards */
+  .protocol-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin: 1.2rem 0; }
+  @media(max-width:700px){ .protocol-wrap { grid-template-columns: 1fr; } }
+  .protocol-card {
+    border-radius: var(--radius);
+    padding: 1.4rem;
+    border: 2px solid;
+  }
+  .protocol-card.preventivo { border-color: var(--gold); background: #FFFBF0; }
+  .protocol-card.activo     { border-color: #C0392B; background: #FFF9F9; }
+  .protocol-card .pc-label  { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: .5rem; }
+  .protocol-card.preventivo .pc-label { color: var(--gold-dark); }
+  .protocol-card.activo     .pc-label { color: #C0392B; }
+  .protocol-card .pc-title  { font-family: 'Playfair Display', serif; font-size: 1rem; color: var(--text-dark); margin-bottom: .8rem; }
+  .protocol-card ul { list-style: none; }
+  .protocol-card ul li { font-size: .83rem; color: var(--text-mid); padding: .3rem 0 .3rem 1.1rem; position: relative; line-height: 1.5; }
+  .protocol-card ul li::before { content: '›'; position: absolute; left: 0; color: var(--gold); font-weight: 700; }
+  .protocol-card.activo ul li::before { color: #C0392B; }
+
+  /* Eligibility tables */
+  .elig-table { width: 100%; border-collapse: collapse; font-size: .85rem; margin: 1rem 0; }
+  .elig-table th { background: var(--lila); color: white; padding: .7rem 1rem; text-align: left; }
+  .elig-table td { padding: .65rem 1rem; border-bottom: 1px solid var(--cream-dark); vertical-align: top; color: var(--text-mid); }
+  .elig-table tr:nth-child(even) td { background: var(--cream); }
+  .elig-table .ok  { color: #1E8449; font-weight: 700; }
+  .elig-table .no  { color: #C0392B; font-weight: 700; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--lila-light); border-radius: 3px; }
+
+  /* MLC footer */
+  .mlc-footer {
+    text-align: center; padding: .6rem 0 2rem;
+    font-size: .72rem; color: var(--text-light);
+    text-transform: uppercase; letter-spacing: 2px;
+  }
+
+  /* Disclaimer card */
+  .disclaimer-item {
+    background: var(--cream);
+    border-radius: var(--radius);
+    border: 1px solid var(--cream-dark);
+    padding: 1.1rem 1.4rem;
+    margin-bottom: .8rem;
+  }
+  .di-num { font-family: 'Playfair Display', serif; font-size: 1.3rem; color: var(--lila-light); margin-bottom: .3rem; }
+  .di-title { font-weight: 700; font-size: .9rem; color: var(--lila-dark); margin-bottom: .4rem; }
+  .di-text  { font-size: .85rem; color: var(--text-mid); line-height: 1.55; }
+
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════
+     COVER
+══════════════════════════════════════════════════ -->
+<div id="cover">
+  <svg class="cover-logo" viewBox="0 0 120 60" xmlns="http://www.w3.org/2000/svg">
+    <text x="10" y="38" font-family="serif" font-size="14" font-weight="bold" fill="white">THE</text>
+    <text x="4" y="52" font-family="serif" font-size="10" fill="white" letter-spacing="4">MENDOZA</text>
+    <text x="18" y="62" font-family="serif" font-size="7" fill="white" letter-spacing="6">LAW FIRM</text>
+    <rect x="2" y="40" width="116" height="1" fill="rgba(255,255,255,0.4)"/>
+  </svg>
+  <div class="cover-ornament">◆ ◆ ◆</div>
+  <h1 class="cover-title">Políticas<br>Antifraude</h1>
+  <p class="cover-subtitle">Sales Compliance & Controls · SCC</p>
+  <div class="cover-objective">
+    <strong>Objetivo de aprendizaje:</strong> Al finalizar este training, identificarás cómo aplicar de manera óptima y oportuna el protocolo antifraude mediante el análisis de escenarios de activación y la homologación de criterios operativos.
+  </div>
+  <button class="btn-start" onclick="startCourse()">Comenzar Training</button>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     APP
+══════════════════════════════════════════════════ -->
+<div id="app">
+
+  <!-- SIDEBAR -->
+  <nav id="sidebar">
+    <div class="sidebar-logo-wrap">
+      <svg class="sidebar-logo" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+        <text x="2" y="28" font-family="serif" font-size="9" font-weight="bold" fill="white">THE</text>
+        <text x="0" y="40" font-family="serif" font-size="7" fill="white" letter-spacing="2">MENDOZA</text>
+        <rect x="0" y="43" width="60" height="1" fill="rgba(255,255,255,0.4)"/>
+        <text x="6" y="52" font-family="serif" font-size="5" fill="white" letter-spacing="3">LAW FIRM</text>
+      </svg>
+      <div class="sidebar-firm-name">Mendoza<br>Learning Center</div>
+    </div>
+
+    <div class="sidebar-nav" id="sidebar-nav">
+      <div class="nav-item active" onclick="goToSection(0)" data-sec="0">
+        <div class="nav-num">1</div>
+        <div class="nav-text">Fundamentos Éticos y Legales</div>
+      </div>
+      <div class="nav-item" onclick="goToSection(1)" data-sec="1">
+        <div class="nav-num">2</div>
+        <div class="nav-text">Malas Prácticas y Señales de Alerta</div>
+      </div>
+      <div class="nav-item" onclick="goToSection(2)" data-sec="2">
+        <div class="nav-num">3</div>
+        <div class="nav-text">Protocolos Antifraude</div>
+      </div>
+      <div class="nav-item" onclick="goToSection(3)" data-sec="3">
+        <div class="nav-num">4</div>
+        <div class="nav-text">Criterios de Elegibilidad y Trauma</div>
+      </div>
+      <div class="nav-item" onclick="goToSection(4)" data-sec="4">
+        <div class="nav-num">5</div>
+        <div class="nav-text">Casos Prácticos (ABP)</div>
+      </div>
+      <div class="nav-item" onclick="goToSection(5)" data-sec="5">
+        <div class="nav-num">6</div>
+        <div class="nav-text">Reflexiones & Disclaimer</div>
+      </div>
+      <div class="nav-item" onclick="goToSection(6)" data-sec="6">
+        <div class="nav-num">★</div>
+        <div class="nav-text">Evaluación Final</div>
+      </div>
+    </div>
+
+    <div class="sidebar-progress">
+      <div class="prog-label">Progreso del curso</div>
+      <div class="prog-bar-bg"><div class="prog-bar-fill" id="prog-fill" style="width:0%"></div></div>
+      <div class="prog-pct" id="prog-pct">0%</div>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main id="main">
+
+    <!-- ══════════════════
+         SECCIÓN 1
+    ══════════════════ -->
+    <section class="section active" id="sec-0">
+      <div class="sec-header">
+        <div class="sec-badge">
+          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <div>
+          <div class="sec-label">Módulo 1</div>
+          <h2 class="sec-title">Fundamentos Éticos y Legales</h2>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">¿Por qué importa el cumplimiento normativo?</div>
+        <p>En The Mendoza Law Firm, el <em>compliance</em> no es una formalidad: es la base que protege a nuestros clientes, la reputación de la firma y la validez de cada caso que abrimos.</p>
+        <div class="grid-3">
+          <div class="mini-card"><div class="mc-title">Cumplimiento de la ley</div><div class="mc-text">Adherencia estricta a la INA, USCIS y normas federales de inmigración.</div></div>
+          <div class="mini-card"><div class="mc-title">Reputación y fiabilidad</div><div class="mc-text">La confianza del cliente depende de que actuemos con integridad en cada interacción.</div></div>
+          <div class="mini-card"><div class="mc-title">Evitar infracciones</div><div class="mc-text">Las sanciones civiles, penales y la inhabilitación profesional son consecuencias reales.</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Principios éticos fundamentales</div>
+        <ul class="list-styled">
+          <li><strong>Integridad y profesionalidad:</strong> Nuestras acciones deben reflejar honestidad, equidad y compromiso con el bien común.</li>
+          <li><strong>Cumplimiento de las MRPC (ABA):</strong> En particular la Norma 7.1 sobre comunicación veraz y transparente con clientes; y la Regla 8.4 sobre mala conducta profesional.</li>
+          <li><strong>Sin garantías ni promesas:</strong> Las interacciones con clientes deben ser veraces, precisas y transparentes — nunca se pueden garantizar resultados.</li>
+          <li><strong>Dignidad y rectitud moral:</strong> Mantener una reputación de competencia jurídica y conducta ética en todo momento.</li>
+          <li><strong>Confidencialidad y diligencia:</strong> Proteger la información del cliente es una obligación fundamental, con documentación adecuada en cada caso.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">ABA Regla 8.4 — Mala conducta profesional</div>
+        <p>Un abogado comete mala conducta profesional si:</p>
+        <ul class="list-styled">
+          <li>Viola las reglas de conducta profesional o ayuda a otro a hacerlo.</li>
+          <li>Comete un acto criminal que refleje negativamente en su honestidad o idoneidad.</li>
+          <li>Participa en conducta que involucre <strong>engaño, fraude, decepción o falsedad</strong>.</li>
+          <li>Realiza actos perjudiciales para la administración de justicia.</li>
+          <li>Ejerce acoso o discriminación en el ejercicio del derecho.</li>
+        </ul>
+        <div class="warning-box">⚠ Las infracciones de incumplimiento pueden dar lugar a multas civiles, cargos penales y la inhabilitación permanente para ejercer la abogacía.</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Marco legal de referencia</div>
+        <div class="tag-row">
+          <span class="law-cite">INA § 275(a)(1)</span>
+          <span class="law-cite">18 U.S.C. § 1001</span>
+          <span class="law-cite">8 U.S.C. § 1324c</span>
+          <span class="law-cite">18 U.S.C. § 201</span>
+          <span class="law-cite">8 CFR 208.3(c)(5)</span>
+        </div>
+        <div class="grid-2" style="margin-top:1rem;">
+          <div class="mini-card"><div class="mc-title">Declaraciones falsas — 18 U.S.C. § 1001</div><div class="mc-text">Prohibe realizar o ayudar a realizar declaraciones falsas en procedimientos de inmigración.</div></div>
+          <div class="mini-card"><div class="mc-title">Documentos fraudulentos — 8 U.S.C. § 1324c</div><div class="mc-text">Crear, poseer o presentar documentación fraudulenta de inmigración.</div></div>
+          <div class="mini-card"><div class="mc-title">Soborno — 18 U.S.C. § 201</div><div class="mc-text">Ofrecer o aceptar sobornos a cambio de beneficios migratorios.</div></div>
+          <div class="mini-card"><div class="mc-title">UPL — Ejercicio ilegal de la abogacía</div><div class="mc-text">Proporcionar asesoramiento jurídico sin autorización según las normas del USCIS y la ABA.</div></div>
+        </div>
+      </div>
+
+      <!-- EJERCICIO 1 -->
+      <div class="exercise-block" id="ex-0-1">
+        <div class="ex-header">
+          <div class="ex-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg></div>
+          <div>
+            <div class="ex-subtitle">Ejercicio de Confirmación</div>
+            <div class="ex-title">Módulo 1 · Ejercicio A</div>
+          </div>
+        </div>
+
+        <div class="question-block" id="q-0-1-1">
+          <div class="question-text"><span class="question-num">1.</span> Según la Regla 7.1 de la ABA, ¿cuál de las siguientes acciones constituye una comunicación falsa o engañosa?</div>
+          <div class="options">
+            <div class="option" onclick="selectOption(this,'q-0-1-1','A')"><div class="option-letter">A</div>Explicar al cliente que su caso es complejo y no tiene garantía de aprobación.</div>
+            <div class="option" onclick="selectOption(this,'q-0-1-1','B')"><div class="option-letter">B</div>Decirle al cliente que con seguridad ganará el caso si paga los honorarios.</div>
+            <div class="option" onclick="selectOption(this,'q-0-1-1','C')"><div class="option-letter">C</div>Informar al cliente sobre los criterios de elegibilidad de su visa.</div>
+            <div class="option" onclick="selectOption(this,'q-0-1-1','D')"><div class="option-letter">D</div>Solicitar documentación auténtica al cliente para respaldar su caso.</div>
+          </div>
+          <div class="feedback-box feedback-correct" id="fb-0-1-1-correct">✓ Correcto. Garantizar resultados es una promesa falsa que contradice las leyes de inmigración y viola la Regla 7.1 de la ABA sobre comunicaciones veraces.</div>
+          <div class="feedback-box feedback-wrong" id="fb-0-1-1-wrong">✗ Incorrecto. La respuesta correcta es B. Garantizar la aprobación del caso constituye una promesa falsa que viola la Regla 7.1 de la ABA.</div>
+        </div>
+
+        <div class="question-block" id="q-0-1-2">
+          <div class="question-text"><span class="question-num">2.</span> Verdadero o Falso: El incumplimiento de las normas de la ABA puede resultar en la inhabilitación permanente para ejercer la abogacía.</div>
+          <div class="tf-options">
+            <div class="tf-btn" onclick="selectTF(this,'q-0-1-2','V')">Verdadero</div>
+            <div class="tf-btn" onclick="selectTF(this,'q-0-1-2','F')">Falso</div>
+          </div>
+          <div class="feedback-box feedback-correct" id="fb-0-1-2-correct">✓ Correcto. Las infracciones graves pueden resultar en multas civiles, cargos penales y la inhabilitación permanente para ejercer.</div>
+          <div class="feedback-box feedback-wrong" id="fb-0-1-2-wrong">✗ Incorrecto. Es Verdadero: las infracciones graves pueden resultar en multas civiles, cargos penales y la inhabilitación permanente.</div>
+        </div>
+
+        <button class="btn-check" id="check-0-1" onclick="checkExercise('0-1', {'q-0-1-1':'B','q-0-1-2':'V'})">Verificar respuestas</button>
+        <div class="ex-score-display" id="score-0-1">
+          <div class="ex-score-num" id="score-0-1-val">0/2</div>
+          <div class="ex-score-label">respuestas correctas</div>
+        </div>
+      </div>
+
+      <div class="section-nav">
+        <button class="btn-nav btn-prev" disabled>← Anterior</button>
+        <button class="btn-nav btn-next" onclick="goToSection(1)">Siguiente módulo →</button>
+      </div>
+      <div class="mlc-footer">Mendoza Learning Center · Políticas Antifraude SCC</div>
+    </section>
+
+    <!-- ══════════════════
+         SECCIÓN 2
+    ══════════════════ -->
+    <section class="section" id="sec-1">
+      <div class="sec-header">
+        <div class="sec-badge">
+          <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <div>
+          <div class="sec-label">Módulo 2</div>
+          <h2 class="sec-title">Malas Prácticas y Señales de Alerta</h2>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Prácticas prohibidas — Capítulo 2</div>
+        <p>Las siguientes conductas están expresamente prohibidas y pueden derivar en sanciones disciplinarias, incluyendo la rescisión inmediata del contrato.</p>
+
+        <div class="grid-2">
+          <div class="mini-card">
+            <div class="mc-num">01</div>
+            <div class="mc-title">Falsificación de declaraciones</div>
+            <div class="mc-text">Modificar testimonios del cliente, crear eventos inexistentes en documentación del caso, omitir antecedentes penales o contradiciones relevantes.</div>
+          </div>
+          <div class="mini-card">
+            <div class="mc-num">02</div>
+            <div class="mc-title">Corrupción y deshonestidad</div>
+            <div class="mc-text">Soborno, aceptar pagos para casos inviables, coaccionar al cliente para pagos adicionales prometiendo garantías de aprobación.</div>
+          </div>
+          <div class="mini-card">
+            <div class="mc-num">03</div>
+            <div class="mc-title">Ejercicio ilegal (UPL)</div>
+            <div class="mc-text">Asesorar sobre elegibilidad sin licencia, preparar documentos legales fingiendo experiencia jurídica, suplantación de abogado.</div>
+          </div>
+          <div class="mini-card">
+            <div class="mc-num">04</div>
+            <div class="mc-title">Falta de comunicación y transparencia</div>
+            <div class="mc-text">Promesas falsas de resultados, omitir hechos críticos del caso, no documentar riesgos esenciales como una denegación previa.</div>
+          </div>
+          <div class="mini-card">
+            <div class="mc-num">05</div>
+            <div class="mc-title">Abuso, manipulación y coacción</div>
+            <div class="mc-text">Inducir al cliente a narrar eventos que no ocurrieron, usar lenguaje vulgar o amenazante, crear ambiente hostil durante entrevistas.</div>
+          </div>
+          <div class="mini-card">
+            <div class="mc-num">06</div>
+            <div class="mc-title">Selección incorrecta de teoría del caso</div>
+            <div class="mc-text">Forzar condiciones del caso para ajustar a requisitos legales, ignorar inadmisibilidades o abrir casos sin criterios de abuso/trata.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Señales de alerta durante la entrevista</div>
+        <p>Al detectar cualquiera de estas señales, se activa el protocolo preventivo antifraude:</p>
+        <ul class="list-styled">
+          <li><strong>Intención de mentir, tergiversar o falsificar</strong> — cualquier indicio de que el cliente planea exagerar o inventar hechos.</li>
+          <li><strong>Intentos de soborno</strong> — ofrecer dinero o regalos a cambio de calificar un caso.</li>
+          <li><strong>Intención de matrimonio fraudulento</strong> — admitir que el matrimonio fue únicamente con fines migratorios.</li>
+          <li><strong>Omisión o alteración de información crítica</strong> — el cliente manipula datos personales o del caso.</li>
+          <li><strong>Narrativas incoherentes o preparadas</strong> — declaraciones que parecen memorizadas o instruidas por un tercero.</li>
+          <li><strong>Cambios en declaraciones sobre el abuso</strong> — negación inicial seguida de cambio injustificado de versión.</li>
+          <li><strong>Minimizar o restar importancia al abuso</strong> — con explicaciones inconsistentes o vagas.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Reglas clave de entrevista</div>
+        <div class="gold-box">
+          <strong>Regla de los 2 intentos:</strong> Cuando un cliente potencial niega el abuso, los agentes solo tienen <strong>dos intentos</strong> para aclarar antes de pasar a otro tema. Nunca presionar ni sugerir respuestas.
+        </div>
+        <div class="highlight-box">
+          <strong>Regla del 80/20:</strong> Los clientes deben liderar las conversaciones sobre el abuso — hablan el 80% del tiempo; el agente solo aclara o expresa empatía (20%). Si el cliente muestra angustia traumática, se acepta un equilibrio 60/40.
+        </div>
+        <div class="warning-box">
+          <strong>Práctica informada sobre el trauma:</strong> Las entrevistas deben minimizar la retraumatización y fomentar la confianza y comodidad. Nunca crear ambientes hostiles ni exigir detalles de situaciones traumáticas para obtener información.
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Ejemplo de comunicación prohibida</div>
+        <div class="scenario-card">
+          <div class="scenario-label">⚠ Frase prohibida — Promesa falsa</div>
+          <p><em>"Si usted me trae estas pruebas que le solicito para su caso, le prometo que lo vamos a ganar, usted no se preocupe."</em></p>
+        </div>
+        <p style="margin-top:.9rem;font-size:.88rem;color:var(--text-mid);">Esta frase viola la Regla 7.1 de la ABA (comunicaciones falsas o engañosas) y la política interna de promesas falsas. Los agentes <strong>nunca deben garantizar resultados</strong>.</p>
+      </div>
+
+      <!-- EJERCICIO 2 -->
+      <div class="exercise-block" id="ex-1-1">
+        <div class="ex-header">
+          <div class="ex-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg></div>
+          <div>
+            <div class="ex-subtitle">Ejercicio de Confirmación</div>
+            <div class="ex-title">Módulo 2 · Ejercicio A</div>
+          </div>
+        </div>
+
+        <div class="question-block" id="q-1-1-1">
+          <div class="question-text"><span class="question-num">1.</span> Un agente nota que el cliente parece tener respuestas muy preparadas y cambia su versión cuando se le pide aclaración. ¿Cuál es la acción correcta?</div>
+          <div class="options">
+            <div class="option" onclick="selectOption(this,'q-1-1-1','A')"><div class="option-letter">A</div>Ignorar las inconsistencias y continuar con la entrevista normalmente.</div>
+            <div class="option" onclick="selectOption(this,'q-1-1-1','B')"><div class="option-letter">B</div>Sugerir al cliente la versión más favorable para abrir el caso.</div>
+            <div class="option" onclick="selectOption(this,'q-1-1-1','C')"><div class="option-letter">C</div>Activar el protocolo preventivo antifraude y documentar las inconsistencias.</div>
+            <div class="option" onclick="selectOption(this,'q-1-1-1','D')"><div class="option-letter">D</div>Cerrar la entrevista de inmediato sin reportar nada.</div>
+          </div>
+          <div class="feedback-box feedback-correct" id="fb-1-1-1-correct">✓ Correcto. Las narrativas incoherentes o preparadas son una señal de alerta que activa el protocolo preventivo antifraude.</div>
+          <div class="feedback-box feedback-wrong" id="fb-1-1-1-wrong">✗ Incorrecto. La respuesta correcta es C. Las narrativas incoherentes son una señal de alerta que debe activar el protocolo preventivo y documentarse.</div>
+        </div>
+
+        <div class="question-block" id="q-1-1-2">
+          <div class="question-text"><span class="question-num">2.</span> ¿Cuántos intentos tiene un agente para aclarar si el cliente niega haber sufrido abuso, antes de cambiar de tema?</div>
+          <div class="options">
+            <div class="option" onclick="selectOption(this,'q-1-1-2','A')"><div class="option-letter">A</div>Uno.</div>
+            <div class="option" onclick="selectOption(this,'q-1-1-2','B')"><div class="option-letter">B</div>Dos.</div>
+            <div class="option" onclick="selectOption(this,'q-1-1-2','C')"><div class="option-letter">C</div>Tres.</div>
+            <div class="option" onclick="selectOption(this,'q-1-1-2','D')"><div class="option-letter">D</div>Los que sean necesarios hasta obtener una respuesta.</div>
+          </div>
+          <div class="feedback-box feedback-correct" id="fb-1-1-2-correct">✓ Correcto. La Regla de los 2 intentos establece que, si el cliente niega el abuso, solo se puede intentar aclarar dos veces antes de cambiar de tema.</div>
+          <div class="feedback-box feedback-wrong" id="fb-1-1-2-wrong">✗ Incorrecto. La respuesta correcta es B (dos intentos). La Regla de los 2 intentos protege al cliente de ser presionado o manipulado.</div>
+        </div>
+
+        <button class="btn-check" id="check-1-1" onclick="checkExercise('1-1', {'q-1-1-1':'C','q-1-1-2':'B'})">Verificar respuestas</button>
+        <div class="ex-score-display" id="score-1-1">
+          <div class="ex-score-num" id="score-1-1-val">0/2</div>
+          <div class="ex-score-label">respuestas correctas</div>
+        </div>
+      </div>
+
+      <div class="section-nav">
+        <button class="btn-nav btn-prev" onclick="goToSection(0)">← Anterior</button>
+        <button class="btn-nav btn-next" onclick="goToSection(2)">Siguiente módulo →</button>
+      </div>
+      <div class="mlc-footer">Mendoza Learning Center · Políticas Antifraude SCC</div>
+    </section>
+
+    <!-- ══════════════════
+         SECCIÓN 3
+    ══════════════════ -->
+    <section class="section" id="sec-2">
+      <div class="sec-header">
+        <div class="sec-badge">
+          <svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><path d="M12 2a10 10 0 100 20 10 10 0 000-20z"/></svg>
+        </div>
+        <div>
+          <div class="sec-label">Módulo 3</div>
+          <h2 class="sec-title">Protocolos Antifraude</h2>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Dos niveles de respuesta</div>
+        <p>El sistema antifraude de TMLF opera en dos niveles que se activan según la gravedad e intención de la situación detectada.</p>
+        <div class="protocol-wrap">
+          <div class="protocol-card preventivo">
+            <div class="pc-label">Nivel 1</div>
+            <div class="pc-title">Protocolo Preventivo Antifraude</div>
+            <ul>
+              <li>Se activa cuando hay <em>indicios</em> de posible fraude — no certeza.</li>
+              <li>El agente documenta la situación y la escalona a supervisión para revisión.</li>
+              <li>Se realiza una evaluación exhaustiva de las nuevas afirmaciones o inconsistencias.</li>
+              <li>Si no se confirma fraude, el caso puede continuar con monitoreo adicional.</li>
+              <li>Si se confirma intención fraudulenta, escala al Protocolo Antifraude.</li>
+            </ul>
+          </div>
+          <div class="protocol-card activo">
+            <div class="pc-label">Nivel 2</div>
+            <div class="pc-title">Protocolo Antifraude (Activo)</div>
+            <ul>
+              <li>Se activa cuando la tergiversación es <strong>deliberada y persistente</strong>.</li>
+              <li>Aplica de forma <strong>inmediata</strong> ante: matrimonio fraudulento admitido, intentos de soborno o manipulación significativa y repetida.</li>
+              <li>Se remite el caso y se emite el <em>Friendly Anti-Fraud Disclaimer</em> al cliente.</li>
+              <li>Se inicia proceso de reembolso y cierre del caso.</li>
+              <li>El agente no debe negociar: debe reportar el incidente inmediatamente.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Cuándo activar cada protocolo</div>
+        <table class="disc-table">
+          <thead><tr><th>Señal de alerta detectada</th><th>Protocolo</th></tr></thead>
+          <tbody>
+            <tr><td>Indicio de intención de mentir o exagerar</td><td><span class="tag tag-gold">Preventivo</span></td></tr>
+            <tr><td>Tergiversación deliberada y persistente</td><td><span class="tag tag-red">Activo</span></td></tr>
+            <tr><td>Intento de soborno (dinero, regalo, incentivo)</td><td><span class="tag tag-red">Activo — Inmediato</span></td></tr>
+            <tr><td>Cliente admite matrimonio fraudulento</td><td><span class="tag tag-red">Activo — Inmediato</span></td></tr>
+            <tr><td>Omisión o alteración de información crítica</td><td><span class="tag tag-gold">Preventivo</span></td></tr>
+            <tr><td>Manipulación significativa o repetida</td><td><span class="tag tag-red">Activo</span></td></tr>
+            <tr><td>Narrativa incoherente o preparada</td><td><span class="tag tag-gold">Preventivo</span></td></tr>
+            <tr><td>Cambio de versión con dudas de credibilidad</td><td><span class="tag tag-gold">Preventivo → puede escalar</span></td></tr>
+            <tr><td>Minimizar abuso con explicaciones vagas</td><td><span class="tag tag-gold">Preventivo</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Evaluación exhaustiva (Protocolo Preventivo)</div>
+        <p>Cuando se inicia una revisión preventiva, el agente debe determinar:</p>
+        <ul class="list-styled">
+          <li>Si las nuevas reclamaciones son creíbles y están respaldadas por pruebas adicionales.</li>
+          <li>Si hay signos de <em>coaching</em> externo que influyan en las declaraciones del cliente.</li>
+          <li>Si las inconsistencias en el testimonio entran en conflicto con pruebas o registros anteriores.</li>
+        </ul>
+        <div class="highlight-box">💡 Reflexiona: ¿Cómo diferencias tú entre negación del abuso por cuestiones de trauma y negación fraudulenta? La clave está en la consistencia, el contexto y la ausencia de presión externa.</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Sistema disciplinario progresivo</div>
+        <table class="disc-table">
+          <thead><tr><th>Nivel</th><th>Tipo</th><th>Aplica cuando…</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>Sesión de retroalimentación (RR. HH.)</td><td>Primera ocurrencia, enfoque educativo.</td></tr>
+            <tr><td>2</td><td>Advertencia verbal</td><td>Observaciones previas no corrigieron el comportamiento.</td></tr>
+            <tr><td>3</td><td>Advertencia por escrito</td><td>Incumplimiento persistente o riesgo a la integridad del caso.</td></tr>
+            <tr><td>4</td><td>Rescisión inmediata del contrato</td><td>Soborno, falsificación, UPL, manipulación grave del cliente.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- EJERCICIO 3 -->
+      <div class="exercise-block" id="ex-2-1">
+        <div class="ex-header">
+          <div class="ex-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg></div>
+          <div>
+            <div class="ex-subtitle">Ejercicio de Confirmación</div>
+            <div class="ex-title">Módulo 3 · Ejercicio A</div>
+          </div>
+        </div>
+
+        <div class="question-block" id="q-2-1-1">
+          <div class="question-text"><span class="question-num">1.</span> Un cliente potencial ofrece dinero extra al agente a cambio de que "califique" su caso. ¿Qué debe hacer el agente?</div>
+          <div class="options">
+            <div class="option" onclick="selectOption(this,'q-2-1-1','A')"><div class="option-letter">A</div>Negociar el monto y reportarlo después.</div>
+            <div class="option" onclick="selectOption(this,'q-2-1-1','B')"><div class="option-letter">B</div>Ignorarlo y continuar con la entrevista normalmente.</div>
+            <div class="option" onclick="selectOption(this,'q-2-1-1','C')"><div class="option-letter">C</div>Activar inmediatamente el Protocolo Antifraude y reportar el incidente a supervisión.</div>
+            <div class="option" onclick="selectOption(this,'q-2-1-1','D')"><div class="option-letter">D</div>Activar el Protocolo Preventivo y esperar a que se repita para confirmar.</div>
+          </div>
+          <div class="feedback-box feedback-correct" id="fb-2-1-1-correct">✓ Correcto. Los intentos de soborno activan <em>inmediatamente</em> el Protocolo Antifraude (Nivel 2). El agente no debe negociar y debe reportar de inmediato.</div>
+          <div class="feedback-box feedback-wrong" id="fb-2-1-1-wrong">✗ Incorrecto. La respuesta correcta es C. Los intentos de soborno activan de forma inmediata el Protocolo Antifraude. No hay espacio para negociación.</div>
+        </div>
+
+        <div class="question-block" id="q-2-1-2">
+          <div class="question-text"><span class="question-num">2.</span> Verdadero o Falso: El Protocolo Preventivo puede escalar al Protocolo Antifraude si la tergiversación es deliberada y persistente.</div>
+          <div class="tf-options">
+            <div class="tf-btn" onclick="selectTF(this,'q-2-1-2','V')">Verdadero</div>
+            <div class="tf-btn" onclick="selectTF(this,'q-2-1-2','F')">Falso</div>
+          </div>
+          <div class="feedback-box feedback-correct" id="fb-2-1-2-correct">✓ Correcto. El Protocolo Preventivo es el primer nivel de revisión y puede escalar al Protocolo Antifraude cuando la tergiversación es deliberada y persistente.</div>
+          <div class="feedback-box feedback-wrong" id="fb-2-1-2-wrong">✗ Incorrecto. Es Verdadero: el Protocolo Preventivo puede escalar cuando la tergiversación se confirma como deliberada y persistente.</div>
+        </div>
+
+        <button class="btn-check" id="check-2-1" onclick="checkExercise('2-1', {'q-2-1-1':'C','q-2-1-2':'V'})">Verificar respuestas</button>
+        <div class="ex-score-display" id="score-2-1">
+          <div class="ex-score-num" id="score-2-1-val">0/2</div>
+          <div class="ex-score-label">respuestas correctas</div>
+        </div>
+      </div>
+
+      <div class="section-nav">
+        <button class="btn-nav btn-prev" onclick="goToSection(1)">← Anterior</button>
+        <button class="btn-nav btn-next" onclick="goToSection(3)">Siguiente módulo →</button>
+      </div>
+      <div class="mlc-footer">Mendoza Learning Center · Políticas Antifraude SCC</div>
+    </section>
+
+    <!-- ══════════════════
+         SECCIÓN 4
+    ══════════════════ -->
+    <section class="section" id="sec-3">
+      <div class="sec-header">
+        <div class="sec-badge">
+          <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        </div>
+        <div>
+          <div class="sec-label">Módulo 4</div>
+          <h2 class="sec-title">Criterios de Elegibilidad y Trauma</h2>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Criterios de elegibilidad — VAWA</div>
+        <table class="elig-table">
+          <thead><tr><th>Criterio</th><th>Descripción</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Relación calificada</strong></td><td>Matrimonio legal con ciudadano/LPR; también aplica para padres de hijo/a ciudadano/a mayor de 21 años. Mínimo 6 meses de matrimonio recomendado.</td></tr>
+            <tr><td><strong>Matrimonio de buena fe</strong></td><td>El matrimonio no debe haberse contraído con fines migratorios. Se verifica historia de relación y convivencia.</td></tr>
+            <tr><td><strong>Buena conducta moral</strong></td><td>Sin condenas graves en los últimos 3 años. Descalificaciones automáticas: tráfico de drogas/personas, abuso sexual infantil, reincidencia en libertad condicional.</td></tr>
+            <tr><td><strong>Residencia conjunta</strong></td><td>El PC y el agresor deben haber convivido. Si se separan, se requieren pruebas de convivencia anterior.</td></tr>
+            <tr><td><strong>Abuso (crueldad extrema o agresión física)</strong></td><td>Patrón sostenido de abuso. No se requiere violencia física si hay pruebas suficientes de crueldad extrema. Consultar el Abusómetro interno.</td></tr>
+          </tbody>
+        </table>
+        <div class="warning-box">Un caso VAWA <strong>no puede proceder</strong> si: el agresor no convivió con el cliente al menos 3 meses después de los 21 años; si no hay evidencia de abuso grave; o si el caso se basa únicamente en elementos no relacionados con el abuso. No se pueden abrir casos con <strong>más de 2 condenas penales</strong>.</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Criterios de elegibilidad — Visa T</div>
+        <table class="elig-table">
+          <thead><tr><th>Criterio</th><th>Descripción</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Esquema grave de trata</strong></td><td>Debe cumplir criterio proceso-medios-fin. Duración: coyotes 10-15 días; explotación laboral/violencia doméstica hasta 6 meses.</td></tr>
+            <tr><td><strong>Indicadores de explotación laboral</strong></td><td>Evaluar ingresos, métodos de pago, condiciones de trabajo y pérdida de independencia financiera. Comparar con salario mínimo federal/estatal.</td></tr>
+            <tr><td><strong>Cooperación con fuerzas del orden</strong></td><td>El PC debe estar dispuesto a colaborar en la investigación o enjuiciamiento de los traficantes.</td></tr>
+            <tr><td><strong>Presencia física en EE. UU.</strong></td><td>La víctima debe haber permanecido en EE. UU. como resultado de la trata o sus consecuencias.</td></tr>
+            <tr><td><strong>Admisibilidad</strong></td><td>Sin condenas por delitos graves. Infracciones menores: evaluación individual.</td></tr>
+            <tr><td><strong>Dificultades extremas en caso de expulsión</strong></td><td>Evaluar daño inusual y grave (médico, psicológico, de seguridad) en caso de deportación.</td></tr>
+          </tbody>
+        </table>
+        <div class="warning-box">Una Visa T <strong>no puede proceder</strong> si: la trata no cumple los criterios legales; si la víctima no permaneció en EE. UU. como resultado de la trata; si el caso se basa únicamente en salarios bajos sin coacción; o si no hay indicios graves de trata de personas.</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Práctica informada sobre el trauma</div>
+        <div class="highlight-box">
+          Las entrevistas deben minimizar la retraumatización y fomentar la confianza y comodidad, garantizando que los clientes se sientan seguros.
+        </div>
+        <div class="grid-2">
+          <div class="mini-card">
+            <div class="mc-title">Regla 80/20</div>
+            <div class="mc-text">El cliente habla el 80% del tiempo. El agente solo aclara o expresa empatía (20%). El cliente lidera la conversación sobre el abuso.</div>
+          </div>
+          <div class="mini-card">
+            <div class="mc-title">Excepción 60/40</div>
+            <div class="mc-text">Si el cliente muestra angustia relacionada con el trauma, se acepta un equilibrio 60/40, manteniendo siempre el respeto por su estado emocional.</div>
+          </div>
+        </div>
+        <p style="font-size:.88rem;color:var(--text-mid);margin-top:.8rem;">La diferencia entre negación por trauma y negación fraudulenta está en la consistencia, el contexto emocional y la ausencia de motivaciones externas detectables.</p>
+      </div>
+
+      <!-- EJERCICIO 4 -->
+      <div class="exercise-block" id="ex-3-1">
+        <div class="ex-header">
+          <div class="ex-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg></div>
+          <div>
+            <div class="ex-subtitle">Ejercicio de Confirmación</div>
+            <div class="ex-title">Módulo 4 · Ejercicio A</div>
+          </div>
+        </div>
+
+        <div class="question-block" id="q-3-1-1">
+          <div class="question-text"><span class="question-num">1.</span> ¿Cuál de los siguientes criterios NO es requerido para abrir un caso VAWA?</div>
+          <div class="options">
+            <div class="option" onclick="selectOption(this,'q-3-1-1','A')"><div class="option-letter">A</div>El cliente debe haber convivido con el agresor.</div>
+            <div class="option" onclick="selectOption(this,'q-3-1-1','B')"><div class="option-letter">B</div>El cliente debe tener buena conducta moral.</div>
+            <div class="option" onclick="selectOption(this,'q-3-1-1','C')"><div class="option-letter">C</div>El cliente debe tener más de 30 años de edad.</div>
+            <div class="option" onclick="selectOption(this,'q-3-1-1','D')"><div class="option-letter">D</div>El matrimonio debe ser de buena fe.</div>
+          </div>
+          <div class="feedback-box feedback-correct" id="fb-3-1-1-correct">✓ Correcto. La edad del cliente no es un criterio de elegibilidad para VAWA. Los criterios son: relación calificada, buena fe, buena conducta moral, residencia conjunta y abuso.</div>
+          <div class="feedback-box feedback-wrong" id="fb-3-1-1-wrong">✗ Incorrecto. La respuesta correcta es C. La edad del cliente no es un criterio de elegibilidad VAWA. Los criterios son: relación calificada, buena fe, conducta moral, residencia conjunta y abuso.</div>
+        </div>
+
+        <div class="question-block" id="q-3-1-2">
+          <div class="question-text"><span class="question-num">2.</span> Para la Visa T, las simples infracciones del salario mínimo, sin evidencia de fuerza, fraude o coacción, ¿constituyen trata de personas?</div>
+          <div class="tf-options">
+            <div class="tf-btn" onclick="selectTF(this,'q-3-1-2','V')">Verdadero</div>
+            <div class="tf-btn" onclick="selectTF(this,'q-3-1-2','F')">Falso</div>
+          </div>
+          <div class="feedback-box feedback-correct" id="fb-3-1-2-correct">✓ Correcto. Las infracciones del salario mínimo por sí solas no constituyen trata de personas. Se requieren pruebas de fuerza, fraude o coacción para calificar.</div>
+          <div class="feedback-box feedback-wrong" id="fb-3-1-2-wrong">✗ Incorrecto. Es Falso. Las infracciones del salario mínimo por sí solas NO constituyen trata de personas. Se requieren pruebas de fuerza, fraude o coacción.</div>
+        </div>
+
+        <button class="btn-check" id="check-3-1" onclick="checkExercise('3-1', {'q-3-1-1':'C','q-3-1-2':'F'})">Verificar respuestas</button>
+        <div class="ex-score-display" id="score-3-1">
+          <div class="ex-score-num" id="score-3-1-val">0/2</div>
+          <div class="ex-score-label">respuestas correctas</div>
+        </div>
+      </div>
+
+      <div class="section-nav">
+        <button class="btn-nav btn-prev" onclick="goToSection(2)">← Anterior</button>
+        <button class="btn-nav btn-next" onclick="goToSection(4)">Siguiente módulo →</button>
+      </div>
+      <div class="mlc-footer">Mendoza Learning Center · Políticas Antifraude SCC</div>
+    </section>
+
+    <!-- ══════════════════
+         SECCIÓN 5 — ABP
+    ══════════════════ -->
+    <section class="section" id="sec-4">
+      <div class="sec-header">
+        <div class="sec-badge">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        </div>
+        <div>
+          <div class="sec-label">Módulo 5</div>
+          <h2 class="sec-title">Casos Prácticos (ABP)</h2>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Metodología ABP: Aprender Resolviendo Problemas Reales</div>
+        <p>Los siguientes casos están basados en situaciones representativas del Departamento de Ventas. Analiza cada escenario aplicando los principios del curso antes de ver el análisis.</p>
+      </div>
+
+      <!-- Caso 1 -->
+      <div class="card">
+        <div class="scenario-card">
+          <div class="scenario-label">📋 Caso 1 — Antecedentes penales y solicitud de omisión</div>
+          <p>Juan Antonio Barrasa, nacido en Nicaragua, quiere aplicar para una Visa VAWA por su esposa abusadora. Al indagar sobre sus antecedentes penales, el cliente sincera que tiene dos o tres DUIs y que en algún momento lo denunciaron por acoso. Al querer buscar más detalles, el PC menciona que preferiría que estos antecedentes sean omitidos de su solicitud para que no afecte su caso.</p>
+        </div>
+        <div class="card-title" style="margin-top:1.2rem;">Análisis del caso</div>
+        <div class="gold-box">
+          <strong>¿Qué normas éticas y legales aplican?</strong><br>
+          La Regla 8.4 de la ABA prohíbe participar en conducta que involucre fraude o falsedad. La 8 U.S.C. § 1324c prohíbe la omisión deliberada de información en solicitudes de inmigración. La política de TMLF establece que no pueden abrirse casos con más de 2 condenas penales.
+        </div>
+        <div class="warning-box">
+          <strong>Acción correcta:</strong> El agente debe explicar que la firma NO puede omitir antecedentes penales — hacerlo constituiría fraude migratorio. Además, con 2+ condenas, este caso no cumple los criterios de elegibilidad VAWA. Se activa el Protocolo Antifraude (solicitud explícita de omisión) y se documenta el incidente.
+        </div>
+        <ul class="list-styled">
+          <li>No se puede abrir el caso: más de 2 condenas penales.</li>
+          <li>La solicitud de omitir antecedentes activa el Protocolo Antifraude de inmediato.</li>
+          <li>El agente no puede negociar ni sugerir formas alternativas de presentar la información.</li>
+        </ul>
+      </div>
+
+      <!-- Caso 2 -->
+      <div class="card">
+        <div class="scenario-card">
+          <div class="scenario-label">📋 Caso 2 — Pago extra y garantía de aprobación</div>
+          <p>Una agente está perfilando un caso Visa T que parece sencillo porque cumple con todas las características de la visa. Se le ocurre decirle al PC que le puede asegurar la aprobación de su caso, siempre y cuando el PC le dé un pago extra. Pasa su cuenta de PayPal al cliente por las cuentas oficiales de la firma. Su TL se da cuenta.</p>
+        </div>
+        <div class="card-title" style="margin-top:1.2rem;">Análisis del caso</div>
+        <div class="gold-box">
+          <strong>Infracciones identificadas:</strong> (1) Garantizar resultados viola la Regla 7.1 de la ABA. (2) Solicitar pagos adicionales por fuera de los honorarios establecidos viola la política de coacción (Cap. 2.2.3). (3) Soborno activo — activa el Protocolo Antifraude de forma inmediata.
+        </div>
+        <div class="warning-box">
+          <strong>Consecuencias:</strong> Esta conducta constituye soborno, corrupción y ejercicio deshonesto — causales de rescisión inmediata del contrato. El TL debe reportar el incidente a RR. HH. y Compliance. El cliente debe ser contactado para transparentar la situación.
+        </div>
+      </div>
+
+      <!-- Caso 3 -->
+      <div class="card">
+        <div class="scenario-card">
+          <div class="scenario-label">📋 Caso 3 — Sugerencia de fabricar abuso para fortalecer el caso</div>
+          <p>Durante una consulta, un agente le dice al cliente: <em>"Entiendo que no ha sufrido violencia por parte de su esposa, pero este es el tipo de casos con mayor aprobación en la firma. ¿Le parece que en su caso decimos que existen varios abusos?"</em></p>
+        </div>
+        <div class="card-title" style="margin-top:1.2rem;">Análisis del caso</div>
+        <div class="warning-box">
+          Esta frase constituye <strong>manipulación activa del cliente</strong>, falsificación intencional de declaraciones y UPL (ejercicio ilegal de la abogacía). Viola múltiples normas: ABA 8.4, INA § 275(a)(1), y la política interna de TMLF. Las consecuencias incluyen rescisión inmediata del contrato y potencial enjuiciamiento penal.
+        </div>
+        <div class="highlight-box">
+          💡 La firma de la Abogada María Mendoza <strong>solo toma casos basados en la verdad</strong>. Nunca se puede inducir, sugerir ni fabricar situaciones de abuso para fortalecer un caso.
+        </div>
+      </div>
+
+      <!-- EJERCICIO 5 -->
+      <div class="exercise-block" id="ex-4-1">
+        <div class="ex-header">
+          <div class="ex-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg></div>
+          <div>
+            <div class="ex-subtitle">Ejercicio de Confirmación</div>
+            <div class="ex-title">Módulo 5 · Ejercicio A</div>
+          </div>
+        </div>
+
+        <div class="question-block" id="q-4-1-1">
+          <div class="question-text"><span class="question-num">1.</span> En el caso de Juan Antonio Barrasa (Caso 1), ¿cuál es la razón principal por la que el caso NO puede abrirse como VAWA?</div>
+          <div class="options">
+            <div class="option" onclick="selectOption(this,'q-4-1-1','A')"><div class="option-letter">A</div>Porque Juan Antonio es de Nicaragua, no de México.</div>
+            <div class="option" onclick="selectOption(this,'q-4-1-1','B')"><div class="option-letter">B</div>Porque tiene más de dos condenas penales, lo que viola los criterios de elegibilidad.</div>
+            <div class="option" onclick="selectOption(this,'q-4-1-1','C')"><div class="option-letter">C</div>Porque el caso fue referido por un familiar.</div>
+            <div class="option" onclick="selectOption(this,'q-4-1-1','D')"><div class="option-letter">D</div>Porque no mencionó el abuso durante los primeros dos minutos de la entrevista.</div>
+          </div>
+          <div class="feedback-box feedback-correct" id="fb-4-1-1-correct">✓ Correcto. Con más de 2 condenas penales, el caso no cumple el criterio de buena conducta moral establecido en la política de TMLF. Además, la solicitud de omitir antecedentes activa el Protocolo Antifraude.</div>
+          <div class="feedback-box feedback-wrong" id="fb-4-1-1-wrong">✗ Incorrecto. La respuesta correcta es B. La política de TMLF establece que no pueden abrirse casos con más de 2 condenas penales, independientemente de su naturaleza.</div>
+        </div>
+
+        <div class="question-block" id="q-4-1-2">
+          <div class="question-text"><span class="question-num">2.</span> Sugerir a un cliente que "diga que hubo abuso" para fortalecer su caso es una práctica permitida si el agente cree genuinamente que el cliente sí sufrió abuso.</div>
+          <div class="tf-options">
+            <div class="tf-btn" onclick="selectTF(this,'q-4-1-2','V')">Verdadero</div>
+            <div class="tf-btn" onclick="selectTF(this,'q-4-1-2','F')">Falso</div>
+          </div>
+          <div class="feedback-box feedback-correct" id="fb-4-1-2-correct">✓ Correcto. Es Falso. Sugerir o inducir al cliente a declarar situaciones que no mencionó espontáneamente es manipulación, independientemente de las creencias del agente. Siempre se utilizan preguntas abiertas.</div>
+          <div class="feedback-box feedback-wrong" id="fb-4-1-2-wrong">✗ Incorrecto. Es Falso. Sugerir o inducir declaraciones al cliente constituye manipulación y está expresamente prohibido, independientemente de las intenciones del agente.</div>
+        </div>
+
+        <button class="btn-check" id="check-4-1" onclick="checkExercise('4-1', {'q-4-1-1':'B','q-4-1-2':'F'})">Verificar respuestas</button>
+        <div class="ex-score-display" id="score-4-1">
+          <div class="ex-score-num" id="score-4-1-val">0/2</div>
+          <div class="ex-score-label">respuestas correctas</div>
+        </div>
+      </div>
+
+      <div class="section-nav">
+        <button class="btn-nav btn-prev" onclick="goToSection(3)">← Anterior</button>
+        <button class="btn-nav btn-next" onclick="goToSection(5)">Siguiente módulo →</button>
+      </div>
+      <div class="mlc-footer">Mendoza Learning Center · Políticas Antifraude SCC</div>
+    </section>
+
+    <!-- ══════════════════
+         SECCIÓN 6 — Reflexiones
+    ══════════════════ -->
+    <section class="section" id="sec-5">
+      <div class="sec-header">
+        <div class="sec-badge">
+          <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        </div>
+        <div>
+          <div class="sec-label">Módulo 6</div>
+          <h2 class="sec-title">Reflexiones & Friendly Anti-Fraud Disclaimer</h2>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Compromiso con la excelencia ética</div>
+        <p>En The Mendoza Law Firm, el cumplimiento ético y legal es innegociable. Siguiendo estrictamente estas directrices:</p>
+        <ul class="list-styled">
+          <li>Protegemos los intereses y la confianza de nuestros clientes.</li>
+          <li>Salvaguardamos la reputación y la posición jurídica de la firma.</li>
+          <li>Garantizamos el pleno cumplimiento de las obligaciones profesionales y reglamentarias.</li>
+        </ul>
+        <div class="highlight-box">
+          Mantener estos principios es esencial para defender la justicia, garantizar la transparencia y fomentar el éxito a largo plazo de cada cliente y de la firma.
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Friendly Anti-Fraud Disclaimer — Guía de uso</div>
+        <p>El disclaimer es una herramienta de comunicación preventiva que se aplica según el contexto del cliente. Memoriza cuándo usar cada variante:</p>
+
+        <div class="disclaimer-item">
+          <div class="di-num">01</div>
+          <div class="di-title">Llegó por recomendación o tiene familiar con caso abierto</div>
+          <div class="di-text">Valorar la confianza depositada. Explicar que para apoyarlos es esencial que toda la información compartida sea verdadera y clara.</div>
+        </div>
+        <div class="disclaimer-item">
+          <div class="di-num">02</div>
+          <div class="di-title">Consultó con otros abogados anteriormente</div>
+          <div class="di-text">Agradecerles considerarnos. Explicar que la información debe ser completa y exacta, incluso si fue compartida previamente con otros abogados. El objetivo es proteger su caso.</div>
+        </div>
+        <div class="disclaimer-item">
+          <div class="di-num">03</div>
+          <div class="di-title">Tuvo un procedimiento anterior</div>
+          <div class="di-text">Agradecer que nos permitan ayudarles nuevamente. Es esencial que cuenten todo como realmente ocurrió en trámites anteriores. Con información correcta, la Abogada puede evaluar la mejor forma de proceder, siempre dentro de la ley.</div>
+        </div>
+        <div class="disclaimer-item">
+          <div class="di-num">04</div>
+          <div class="di-title">Ya tiene conocimiento sobre visas humanitarias</div>
+          <div class="di-text">Es positivo estar informado. Recordar que la Abogada solo toma casos basados exclusivamente en experiencias reales del cliente. Lo más importante es que lo compartido sea cierto.</div>
+        </div>
+        <div class="disclaimer-item">
+          <div class="di-num">05</div>
+          <div class="di-title">Tiene documentos no oficiales (no usados para beneficio migratorio)</div>
+          <div class="di-text">Agradecer la sinceridad. La Abogada requiere trabajar únicamente con documentos auténticos y verificables. Es fundamental informarlo siempre con la verdad para evitar riesgos.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Mensaje antifraude de la Firma</div>
+        <div class="gold-box">
+          <strong>"La abogada María Mendoza y The Mendoza Law Firm, LLC, trabajan con el más alto estándar de calidad y apego a las leyes de inmigración. Nuestra firma solo toma casos basados en la verdad. La Abogada María Mendoza le invita amablemente a siempre hablar con la verdad y evitar mentir, exagerar, tergiversar o distorsionar los hechos en todo contacto que se tiene con nosotros, ya que esto puede constituir fraude migratorio."</strong>
+        </div>
+        <div class="warning-box" style="margin-top:1rem;">
+          Si un cliente admite estar dispuesto a mentir o exagerar: se informa inmediatamente que esto puede constituir fraude migratorio, se activa el Protocolo Antifraude, se escala el caso para reembolso, y la Abogada no puede continuar con la representación legal.
+        </div>
+      </div>
+
+      <!-- EJERCICIO 6 -->
+      <div class="exercise-block" id="ex-5-1">
+        <div class="ex-header">
+          <div class="ex-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg></div>
+          <div>
+            <div class="ex-subtitle">Ejercicio de Confirmación</div>
+            <div class="ex-title">Módulo 6 · Ejercicio A</div>
+          </div>
+        </div>
+
+        <div class="question-block" id="q-5-1-1">
+          <div class="question-text"><span class="question-num">1.</span> Un cliente menciona que ya habló con otro abogado y quiere asegurarse de que la versión que dará a la Abogada Mendoza sea "más completa". ¿Cuál es el disclaimer correcto a aplicar?</div>
+          <div class="options">
+            <div class="option" onclick="selectOption(this,'q-5-1-1','A')"><div class="option-letter">A</div>El de "tuvo un procedimiento anterior".</div>
+            <div class="option" onclick="selectOption(this,'q-5-1-1','B')"><div class="option-letter">B</div>El de "consultó con otros abogados anteriormente".</div>
+            <div class="option" onclick="selectOption(this,'q-5-1-1','C')"><div class="option-letter">C</div>El de "tiene documentos no oficiales".</div>
+            <div class="option" onclick="selectOption(this,'q-5-1-1','D')"><div class="option-letter">D</div>No aplica ningún disclaimer en este caso.</div>
+          </div>
+          <div class="feedback-box feedback-correct" id="fb-5-1-1-correct">✓ Correcto. Cuando el cliente ha consultado con otros abogados, se aplica el disclaimer sobre la necesidad de que la información sea completa y exacta, independientemente de lo compartido con abogados previos.</div>
+          <div class="feedback-box feedback-wrong" id="fb-5-1-1-wrong">✗ Incorrecto. La respuesta correcta es B. El disclaimer "consultó con otros abogados" aplica para garantizar que la información compartida con TMLF sea completa y exacta.</div>
+        </div>
+
+        <div class="question-block" id="q-5-1-2">
+          <div class="question-text"><span class="question-num">2.</span> Verdadero o Falso: Si un cliente admite que está dispuesto a exagerar hechos para ganar su caso, la Abogada Mendoza puede tomar el caso si los criterios de elegibilidad se cumplen de todas formas.</div>
+          <div class="tf-options">
+            <div class="tf-btn" onclick="selectTF(this,'q-5-1-2','V')">Verdadero</div>
+            <div class="tf-btn" onclick="selectTF(this,'q-5-1-2','F')">Falso</div>
+          </div>
+          <div class="feedback-box feedback-correct" id="fb-5-1-2-correct">✓ Correcto. Es Falso. Una vez que el cliente admite disposición al fraude, la firma no puede continuar la representación legal, independientemente del cumplimiento de elegibilidad. Se activa el Protocolo Antifraude y se procede con el reembolso.</div>
+          <div class="feedback-box feedback-wrong" id="fb-5-1-2-wrong">✗ Incorrecto. Es Falso. La admisión de intención fraudulenta activa el Protocolo Antifraude. La firma no puede tomar el caso bajo ninguna circunstancia.</div>
+        </div>
+
+        <button class="btn-check" id="check-5-1" onclick="checkExercise('5-1', {'q-5-1-1':'B','q-5-1-2':'F'})">Verificar respuestas</button>
+        <div class="ex-score-display" id="score-5-1">
+          <div class="ex-score-num" id="score-5-1-val">0/2</div>
+          <div class="ex-score-label">respuestas correctas</div>
+        </div>
+      </div>
+
+      <div class="section-nav">
+        <button class="btn-nav btn-prev" onclick="goToSection(4)">← Anterior</button>
+        <button class="btn-nav btn-next" onclick="goToSection(6)">Ir a Evaluación Final →</button>
+      </div>
+      <div class="mlc-footer">Mendoza Learning Center · Políticas Antifraude SCC</div>
+    </section>
+
+    <!-- ══════════════════
+         EVALUACIÓN FINAL
+    ══════════════════ -->
+    <section class="section" id="sec-6">
+      <div class="sec-header">
+        <div class="sec-badge" style="background:linear-gradient(135deg,var(--gold-dark),var(--gold-light));">
+          <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        </div>
+        <div>
+          <div class="sec-label">Evaluación Final</div>
+          <h2 class="sec-title">Políticas Antifraude SCC</h2>
+        </div>
+      </div>
+
+      <!-- INTRO -->
+      <div id="final-exam-intro">
+        <div class="card" style="text-align:center;padding:2.5rem;">
+          <div class="exam-icon-big">
+            <svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+          </div>
+          <h3 style="font-family:'Playfair Display',serif;font-size:1.5rem;color:var(--lila-dark);margin-bottom:.5rem;">¡Es momento de demostrar lo aprendido!</h3>
+          <p style="font-size:.93rem;color:var(--text-mid);max-width:500px;margin:0 auto 1.5rem;line-height:1.6;">Esta evaluación cubre todos los módulos del curso. Tu calificación final se calculará promediando los ejercicios de confirmación (40%) con esta evaluación (60%).</p>
+          <div class="exam-meta-grid">
+            <div class="exam-meta-card"><div class="em-num">13</div><div class="em-label">Preguntas</div></div>
+            <div class="exam-meta-card"><div class="em-num">85</div><div class="em-label">Mínimo para aprobar</div></div>
+            <div class="exam-meta-card"><div class="em-num">60%</div><div class="em-label">Peso en calificación final</div></div>
+          </div>
+          <button class="btn-start" style="margin-top:1rem;" onclick="startFinalExam()">Iniciar evaluación</button>
+        </div>
+      </div>
+
+      <!-- PREGUNTAS EVALUACIÓN FINAL -->
+      <div id="final-exam-questions">
+        <div class="exercise-block" style="border-color:var(--gold);">
+          <div class="ex-header">
+            <div class="ex-icon" style="background:linear-gradient(135deg,var(--gold-dark),var(--gold-light));"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="white" stroke="none"/></svg></div>
+            <div>
+              <div class="ex-subtitle">Evaluación Final</div>
+              <div class="ex-title">13 preguntas — Responde todas antes de enviar</div>
+            </div>
+          </div>
+
+          <!-- Q1 -->
+          <div class="question-block" id="fq-1">
+            <div class="question-text"><span class="question-num">1.</span> ¿Cuál es el objetivo principal de la Política de Buenas Prácticas de Cumplimiento (SCC) en el Departamento de Ventas?</div>
+            <div class="options">
+              <div class="option" onclick="selectFinalOption(this,'fq-1','A')"><div class="option-letter">A</div>Maximizar el número de casos abiertos por mes.</div>
+              <div class="option" onclick="selectFinalOption(this,'fq-1','B')"><div class="option-letter">B</div>Garantizar el cumplimiento de las leyes de inmigración y las MRPC en las funciones diarias del Departamento de Ventas.</div>
+              <div class="option" onclick="selectFinalOption(this,'fq-1','C')"><div class="option-letter">C</div>Establecer los honorarios a cobrar a cada cliente.</div>
+              <div class="option" onclick="selectFinalOption(this,'fq-1','D')"><div class="option-letter">D</div>Regular el horario del equipo de ventas.</div>
+            </div>
+          </div>
+
+          <!-- Q2 -->
+          <div class="question-block" id="fq-2">
+            <div class="question-text"><span class="question-num">2.</span> ¿Cuál de los siguientes es un ejemplo de ejercicio ilegal de la abogacía (UPL)?</div>
+            <div class="options">
+              <div class="option" onclick="selectFinalOption(this,'fq-2','A')"><div class="option-letter">A</div>Explicar al cliente los documentos que necesita presentar para su caso.</div>
+              <div class="option" onclick="selectFinalOption(this,'fq-2','B')"><div class="option-letter">B</div>Transferir una llamada al departamento legal cuando el cliente hace preguntas de elegibilidad.</div>
+              <div class="option" onclick="selectFinalOption(this,'fq-2','C')"><div class="option-letter">C</div>Asesorar al cliente sobre su estrategia migratoria y garantizarle que su visa será aprobada.</div>
+              <div class="option" onclick="selectFinalOption(this,'fq-2','D')"><div class="option-letter">D</div>Documentar las declaraciones del cliente en el sistema.</div>
+            </div>
+          </div>
+
+          <!-- Q3 -->
+          <div class="question-block" id="fq-3">
+            <div class="question-text"><span class="question-num">3.</span> Un cliente ofrece dinero extra "para agilizar su caso". Según los protocolos de TMLF, ¿qué protocolo se activa?</div>
+            <div class="options">
+              <div class="option" onclick="selectFinalOption(this,'fq-3','A')"><div class="option-letter">A</div>Ninguno — el agente puede aceptar si el monto es razonable.</div>
+              <div class="option" onclick="selectFinalOption(this,'fq-3','B')"><div class="option-letter">B</div>Protocolo Preventivo, para evaluar la situación antes de actuar.</div>
+              <div class="option" onclick="selectFinalOption(this,'fq-3','C')"><div class="option-letter">C</div>Protocolo Antifraude activo — de forma inmediata.</div>
+              <div class="option" onclick="selectFinalOption(this,'fq-3','D')"><div class="option-letter">D</div>Se documenta pero no se reporta hasta que se repita.</div>
+            </div>
+          </div>
+
+          <!-- Q4 -->
+          <div class="question-block" id="fq-4">
+            <div class="question-text"><span class="question-num">4.</span> ¿Cuántas condenas penales puede tener un cliente como máximo para que TMLF pueda abrir su caso?</div>
+            <div class="options">
+              <div class="option" onclick="selectFinalOption(this,'fq-4','A')"><div class="option-letter">A</div>Hasta cinco, si son de hace más de 10 años.</div>
+              <div class="option" onclick="selectFinalOption(this,'fq-4','B')"><div class="option-letter">B</div>No hay límite si el cliente es cooperativo.</div>
+              <div class="option" onclick="selectFinalOption(this,'fq-4','C')"><div class="option-letter">C</div>Hasta dos condenas, independientemente del tiempo transcurrido.</div>
+              <div class="option" onclick="selectFinalOption(this,'fq-4','D')"><div class="option-letter">D</div>Solo condenas de los últimos 5 años son relevantes.</div>
+            </div>
+          </div>
+
+          <!-- Q5 -->
+          <div class="question-block" id="fq-5">
+            <div class="question-text"><span class="question-num">5.</span> La Regla del 80/20 en entrevistas establece que:</div>
+            <div class="options">
+              <div class="option" onclick="selectFinalOption(this,'fq-5','A')"><div class="option-letter">A</div>El agente habla el 80% del tiempo para guiar al cliente correctamente.</div>
+              <div class="option" onclick="selectFinalOption(this,'fq-5','B')"><div class="option-letter">B</div>El cliente debe hablar el 80% del tiempo; el agente solo aclara o expresa empatía (20%).</div>
+              <div class="option" onclick="selectFinalOption(this,'fq-5','C')"><div class="option-letter">C</div>El 80% de los casos deben abrirse como VAWA y el 20% como Visa T.</div>
+              <div class="option" onclick="selectFinalOption(this,'fq-5','D')"><div class="option-letter">D</div>El agente debe hacer el 80% de las preguntas antes de que el cliente hable.</div>
+            </div>
+          </div>
+
+          <!-- Q6 -->
+          <div class="question-block" id="fq-6">
+            <div class="question-text"><span class="question-num">6.</span> ¿Cuál de las siguientes frases constituye una comunicación PROHIBIDA según la Regla 7.1 de la ABA?</div>
+            <div class="options">
+              <div class="option" onclick="selectFinalOption(this,'fq-6','A')"><div class="option-letter">A</div>"Su caso tiene aspectos fuertes, pero no puedo garantizar el resultado."</div>
+              <div class="option" onclick="selectFinalOption(this,'fq-6','B')"><div class="option-letter">B</div>"Señora, le prometo que si trae esas pruebas, vamos a ganar el caso."</div>
+              <div class="option" onclick="selectFinalOption(this,'fq-6','C')"><div class="option-letter">C</div>"Los criterios de elegibilidad para su visa incluyen los siguientes requisitos."</div>
+              <div class="option" onclick="selectFinalOption(this,'fq-6','D')"><div class="option-letter">D</div>"Necesitamos más información antes de evaluar si podemos ayudarle."</div>
+            </div>
+          </div>
+
+          <!-- Q7 -->
+          <div class="question-block" id="fq-7">
+            <div class="question-text"><span class="question-num">7.</span> Para una Visa T, ¿cuál es el plazo máximo recomendado para casos de explotación laboral o violencia doméstica?</div>
+            <div class="options">
+              <div class="option" onclick="selectFinalOption(this,'fq-7','A')"><div class="option-letter">A</div>10 a 15 días.</div>
+              <div class="option" onclick="selectFinalOption(this,'fq-7','B')"><div class="option-letter">B</div>30 días.</div>
+              <div class="option" onclick="selectFinalOption(this,'fq-7','C')"><div class="option-letter">C</div>Hasta 6 meses.</div>
+              <div class="option" onclick="selectFinalOption(this,'fq-7','D')"><div class="option-letter">D</div>No existe un plazo definido.</div>
+            </div>
+          </div>
+
+          <!-- Q8 -->
+          <div class="question-block" id="fq-8">
+            <div class="question-text"><span class="question-num">8.</span> ¿Cuál es la diferencia principal entre el Protocolo Preventivo y el Protocolo Antifraude Activo?</div>
+            <div class="options">
+              <div class="option" onclick="selectFinalOption(this,'fq-8','A')"><div class="option-letter">A</div>El Preventivo aplica solo para Visa T; el Activo solo para VAWA.</div>
+              <div class="option" onclick="selectFinalOption(this,'fq-8','B')"><div class="option-letter">B</div>El Preventivo se activa ante indicios de posible fraude; el Activo ante tergiversación deliberada, persistente o soborno confirmado.</div>
+              <div class="option" onclick="selectFinalOption(this,'fq-8','C')"><div class="option-letter">C</div>No hay diferencia; ambos protocolos generan el mismo resultado.</div>
+              <div class="option" onclick="selectFinalOption(this,'fq-8','D')"><div class="option-letter">D</div>El Preventivo lo gestiona el agente; el Activo lo gestiona el cliente.</div>
+            </div>
+          </div>
+
+          <!-- Q9 -->
+          <div class="question-block" id="fq-9">
+            <div class="question-text"><span class="question-num">9.</span> Un cliente inicialmente niega haber sufrido abuso, pero en la segunda sesión cambia su versión y dice que sí lo sufrió. ¿Cuál es la acción correcta?</div>
+            <div class="options">
+              <div class="option" onclick="selectFinalOption(this,'fq-9','A')"><div class="option-letter">A</div>Aceptar el cambio de versión sin cuestionamientos y abrir el caso de inmediato.</div>
+              <div class="option" onclick="selectFinalOption(this,'fq-9','B')"><div class="option-letter">B</div>Iniciar una revisión preventiva antifraude para evaluar el motivo del cambio y la credibilidad de las nuevas afirmaciones.</div>
+              <div class="option" onclick="selectFinalOption(this,'fq-9','C')"><div class="option-letter">C</div>Cerrar el caso por inconsistencia sin posibilidad de continuar.</div>
+              <div class="option" onclick="selectFinalOption(this,'fq-9','D')"><div class="option-letter">D</div>Ignorarlo, porque es normal que los clientes cambien de versión.</div>
+            </div>
+          </div>
+
+          <!-- Q10 -->
+          <div class="question-block" id="fq-10">
+            <div class="question-text"><span class="question-num">10.</span> ¿Cuál de los siguientes sistemas clasifica los casos como PA, PB, PC o PD?</div>
+            <div class="options">
+              <div class="option" onclick="selectFinalOption(this,'fq-10','A')"><div class="option-letter">A</div>El sistema de honorarios de la firma.</div>
+              <div class="option" onclick="selectFinalOption(this,'fq-10','B')"><div class="option-letter">B</div>El sistema de evaluación previa a la categorización del SCC.</div>
+              <div class="option" onclick="selectFinalOption(this,'fq-10','C')"><div class="option-letter">C</div>El Departamento de Psicología.</div>
+              <div class="option" onclick="selectFinalOption(this,'fq-10','D')"><div class="option-letter">D</div>El sistema automático del USCIS.</div>
+            </div>
+          </div>
+
+          <!-- Q11 -->
+          <div class="question-block" id="fq-11">
+            <div class="question-text"><span class="question-num">11.</span> ¿Cuál de los siguientes comportamientos podría resultar en rescisión inmediata del contrato de un agente?</div>
+            <div class="options">
+              <div class="option" onclick="selectFinalOption(this,'fq-11','A')"><div class="option-letter">A</div>Cometer un error de digitación en el sistema.</div>
+              <div class="option" onclick="selectFinalOption(this,'fq-11','B')"><div class="option-letter">B</div>No recordar el nombre exacto de una ley durante la entrevista.</div>
+              <div class="option" onclick="selectFinalOption(this,'fq-11','C')"><div class="option-letter">C</div>Aceptar un pago adicional a cambio de "asegurar" la calificación de un caso.</div>
+              <div class="option" onclick="selectFinalOption(this,'fq-11','D')"><div class="option-letter">D</div>Llegar tarde a una reunión del equipo.</div>
+            </div>
+          </div>
+
+          <!-- Q12 -->
+          <div class="question-block" id="fq-12">
+            <div class="question-text"><span class="question-num">12.</span> Para los casos VAWA, ¿cuál es el criterio de "residencia conjunta"?</div>
+            <div class="options">
+              <div class="option" onclick="selectFinalOption(this,'fq-12','A')"><div class="option-letter">A</div>El cliente y el agresor deben vivir en la misma ciudad actualmente.</div>
+              <div class="option" onclick="selectFinalOption(this,'fq-12','B')"><div class="option-letter">B</div>El cliente y el agresor deben haber convivido durante la relación; si se separan, se requieren pruebas de convivencia anterior.</div>
+              <div class="option" onclick="selectFinalOption(this,'fq-12','C')"><div class="option-letter">C</div>El cliente debe vivir en residencia propia, no rentada.</div>
+              <div class="option" onclick="selectFinalOption(this,'fq-12','D')"><div class="option-letter">D</div>El cliente debe haber vivido en los EE. UU. durante al menos 5 años.</div>
+            </div>
+          </div>
+
+          <!-- Q13 -->
+          <div class="question-block" id="fq-13">
+            <div class="question-text"><span class="question-num">13.</span> ¿Cuál es la filosofía central de The Mendoza Law Firm respecto a los casos que toma?</div>
+            <div class="options">
+              <div class="option" onclick="selectFinalOption(this,'fq-13','A')"><div class="option-letter">A</div>Tomar todos los casos posibles para maximizar los ingresos de la firma.</div>
+              <div class="option" onclick="selectFinalOption(this,'fq-13','B')"><div class="option-letter">B</div>Priorizar casos complejos que generen jurisprudencia favorable.</div>
+              <div class="option" onclick="selectFinalOption(this,'fq-13','C')"><div class="option-letter">C</div>Solo tomar casos basados en hechos verdaderos, con el más alto estándar de calidad y apego a las leyes de inmigración.</div>
+              <div class="option" onclick="selectFinalOption(this,'fq-13','D')"><div class="option-letter">D</div>Tomar casos difíciles para demostrar la capacidad legal de la Abogada.</div>
+            </div>
+          </div>
+
+          <button class="btn-check" id="check-final" style="background:linear-gradient(135deg,var(--gold-dark),var(--gold-light));color:var(--lila-dark);padding:.8rem 2rem;font-size:1rem;" onclick="submitFinalExam()">Enviar evaluación</button>
+        </div>
+      </div>
+
+      <!-- RESULTADO FINAL -->
+      <div id="final-exam-result">
+        <div class="card" style="text-align:center;padding:2.5rem;">
+          <h3 style="font-family:'Playfair Display',serif;font-size:1.4rem;color:var(--lila-dark);margin-bottom:1.5rem;">Resultado del Curso</h3>
+          <div class="result-circle" id="result-circle" style="--pct:0%">
+            <div class="result-inner">
+              <div class="result-pct-num" id="result-final-num">0</div>
+              <div class="result-pct-label">PUNTAJE</div>
+            </div>
+          </div>
+          <div id="result-verdict"></div>
+          <div class="score-breakdown">
+            <div class="sb-row"><span class="sb-label">Ejercicios de confirmación (40%)</span><span class="sb-val" id="sb-exercises">—</span></div>
+            <div class="sb-row"><span class="sb-label">Evaluación final (60%)</span><span class="sb-val" id="sb-exam">—</span></div>
+            <div class="sb-row" style="margin-top:.3rem;"><span class="sb-label sb-total">Calificación final</span><span class="sb-val sb-total" id="sb-total-val">—</span></div>
+          </div>
+          <p style="font-size:.85rem;color:var(--text-light);margin-bottom:1.5rem;">Puntaje mínimo requerido para aprobar: <strong>85</strong></p>
+          <button class="btn-restart" onclick="restartExam()">Reintentar evaluación</button>
+        </div>
+      </div>
+
+      <div class="section-nav" id="final-nav">
+        <button class="btn-nav btn-prev" onclick="goToSection(5)">← Anterior</button>
+        <span style="font-size:.8rem;color:var(--text-light);">Políticas Antifraude SCC · TMLF</span>
+      </div>
+      <div class="mlc-footer">Mendoza Learning Center · Políticas Antifraude SCC</div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════
+let currentSection = 0;
+const totalSections = 7;
+
+// Almacena respuestas seleccionadas para ejercicios de confirmación
+// Formato: { 'exId': { 'qId': 'respuesta' } }
+const exAnswers = {};
+
+// Almacena puntajes de ejercicios completados
+// Formato: { 'exId': { correct: n, total: n } }
+const exScores = {};
+
+// Respuestas finales
+const finalAnswers = {};
+const finalCorrect = {
+  'fq-1':'B','fq-2':'C','fq-3':'C','fq-4':'C','fq-5':'B',
+  'fq-6':'B','fq-7':'C','fq-8':'B','fq-9':'B','fq-10':'B',
+  'fq-11':'C','fq-12':'B','fq-13':'C'
+};
+
+// ══════════════════════════════════════════════════
+// COVER → APP
+// ══════════════════════════════════════════════════
+function startCourse() {
+  document.getElementById('cover').classList.add('hidden');
+  setTimeout(() => {
+    document.getElementById('cover').style.display = 'none';
+    document.getElementById('app').classList.add('visible');
+  }, 700);
+}
+
+// ══════════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════════
+function goToSection(idx) {
+  // Hide current
+  document.getElementById('sec-' + currentSection).classList.remove('active');
+  // Update nav items
+  document.querySelectorAll('.nav-item').forEach((el, i) => {
+    el.classList.remove('active');
+    if (i < idx) el.classList.add('done');
+    if (i === idx) el.classList.add('active');
+  });
+  currentSection = idx;
+  document.getElementById('sec-' + currentSection).classList.add('active');
+  document.getElementById('main').scrollTo(0, 0);
+  updateProgress();
+  SCORM.suspend(idx);
+}
+
+function updateProgress() {
+  const pct = Math.round((currentSection / (totalSections - 1)) * 100);
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-pct').textContent = pct + '%';
+}
+
+// ══════════════════════════════════════════════════
+// EXERCISES — OPTION SELECT
+// ══════════════════════════════════════════════════
+function selectOption(el, qId, letter) {
+  if (el.classList.contains('correct') || el.classList.contains('wrong')) return;
+  // Remove previously selected in same question
+  el.parentElement.querySelectorAll('.option').forEach(o => {
+    if (!o.classList.contains('correct') && !o.classList.contains('wrong')) {
+      o.classList.remove('selected');
+    }
+  });
+  el.classList.add('selected');
+  // Store
+  const exId = qId.split('-').slice(0,3).join('-').replace('q-','');
+  if (!exAnswers[exId]) exAnswers[exId] = {};
+  exAnswers[exId][qId] = letter;
+}
+
+function selectTF(el, qId, val) {
+  if (el.classList.contains('correct') || el.classList.contains('wrong')) return;
+  el.parentElement.querySelectorAll('.tf-btn').forEach(b => {
+    if (!b.classList.contains('correct') && !b.classList.contains('wrong')) {
+      b.classList.remove('selected');
+    }
+  });
+  el.classList.add('selected');
+  const exId = qId.split('-').slice(0,3).join('-').replace('q-','');
+  if (!exAnswers[exId]) exAnswers[exId] = {};
+  exAnswers[exId][qId] = val;
+}
+
+// ══════════════════════════════════════════════════
+// CHECK EXERCISE
+// ══════════════════════════════════════════════════
+function checkExercise(exId, correctMap) {
+  const btn = document.getElementById('check-' + exId);
+  let correct = 0;
+  const total = Object.keys(correctMap).length;
+  const userAnswers = exAnswers[exId] || {};
+
+  Object.entries(correctMap).forEach(([qId, correctAns]) => {
+    const userAns = userAnswers[qId];
+    const isTF = (correctAns === 'V' || correctAns === 'F');
+    const isCorrect = userAns === correctAns;
+    if (isCorrect) correct++;
+
+    if (isTF) {
+      const container = document.getElementById(qId).querySelector('.tf-options');
+      container.querySelectorAll('.tf-btn').forEach(b => {
+        const bVal = b.textContent.startsWith('V') ? 'V' : 'F';
+        if (bVal === correctAns) b.classList.add('correct');
+        else if (bVal === userAns && !isCorrect) b.classList.add('wrong');
+        b.style.pointerEvents = 'none';
+      });
+    } else {
+      const options = document.getElementById(qId).querySelectorAll('.option');
+      options.forEach(o => {
+        const letter = o.querySelector('.option-letter').textContent;
+        if (letter === correctAns) o.classList.add('correct');
+        else if (letter === userAns && !isCorrect) o.classList.add('wrong');
+        o.style.pointerEvents = 'none';
+      });
+    }
+
+    // Show feedback
+    const fbCorrect = document.getElementById('fb-' + qId.replace('q-','') + '-correct');
+    const fbWrong   = document.getElementById('fb-' + qId.replace('q-','') + '-wrong');
+    if (fbCorrect && fbWrong) {
+      fbCorrect.classList.toggle('show', isCorrect);
+      fbWrong.classList.toggle('show', !isCorrect);
+    }
+  });
+
+  btn.disabled = true;
+  exScores[exId] = { correct, total };
+
+  const scoreEl = document.getElementById('score-' + exId);
+  const scoreValEl = document.getElementById('score-' + exId + '-val');
+  if (scoreEl && scoreValEl) {
+    scoreValEl.textContent = correct + '/' + total;
+    scoreEl.classList.add('show');
+  }
+}
+
+// ══════════════════════════════════════════════════
+// FINAL EXAM
+// ══════════════════════════════════════════════════
+function startFinalExam() {
+  document.getElementById('final-exam-intro').style.display = 'none';
+  document.getElementById('final-exam-questions').style.display = 'block';
+}
+
+function selectFinalOption(el, qId, letter) {
+  if (el.classList.contains('correct') || el.classList.contains('wrong')) return;
+  el.parentElement.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  finalAnswers[qId] = letter;
+}
+
+function submitFinalExam() {
+  // Check all answered
+  const allQs = Object.keys(finalCorrect);
+  const unanswered = allQs.filter(q => !finalAnswers[q]);
+  if (unanswered.length > 0) {
+    alert('Por favor responde todas las preguntas antes de enviar. (' + unanswered.length + ' sin responder)');
+    return;
+  }
+
+  let correct = 0;
+  allQs.forEach(qId => {
+    const userAns = finalAnswers[qId];
+    const correctAns = finalCorrect[qId];
+    const isCorrect = userAns === correctAns;
+    if (isCorrect) correct++;
+    const options = document.getElementById(qId).querySelectorAll('.option');
+    options.forEach(o => {
+      const letter = o.querySelector('.option-letter').textContent;
+      if (letter === correctAns) o.classList.add('correct');
+      else if (letter === userAns && !isCorrect) o.classList.add('wrong');
+      o.style.pointerEvents = 'none';
+    });
+  });
+
+  const examScore = Math.round((correct / allQs.length) * 100);
+
+  // Calculate exercises average
+  let exTotal = 0, exCorrect = 0;
+  Object.values(exScores).forEach(s => { exTotal += s.total; exCorrect += s.correct; });
+  const exerciseScore = exTotal > 0 ? Math.round((exCorrect / exTotal) * 100) : 0;
+
+  // Weighted final
+  const finalScore = Math.round(exerciseScore * 0.4 + examScore * 0.6);
+
+  // Report to SCORM
+  SCORM.finish(finalScore);
+
+  // Show result
+  document.getElementById('final-exam-questions').style.display = 'none';
+  const resultDiv = document.getElementById('final-exam-result');
+  resultDiv.style.display = 'block';
+
+  document.getElementById('result-final-num').textContent = finalScore;
+  document.getElementById('result-circle').style.setProperty('--pct', finalScore + '%');
+  document.getElementById('sb-exercises').textContent = exerciseScore + ' pts';
+  document.getElementById('sb-exam').textContent = examScore + ' pts';
+  document.getElementById('sb-total-val').textContent = finalScore + ' / 100';
+
+  const verdictEl = document.getElementById('result-verdict');
+  if (finalScore >= 85) {
+    verdictEl.innerHTML = '<div class="result-pass">✓ ¡Aprobado! Has demostrado dominio de las Políticas Antifraude SCC.</div>';
+    document.getElementById('result-circle').style.background =
+      `conic-gradient(#27AE60 0%, #27AE60 ${finalScore}%, var(--cream-dark) ${finalScore}%)`;
+  } else {
+    verdictEl.innerHTML = '<div class="result-fail">✗ Puntaje por debajo del mínimo. Se recomienda repasar los módulos y reintentar.</div>';
+    document.getElementById('result-circle').style.background =
+      `conic-gradient(#C0392B 0%, #C0392B ${finalScore}%, var(--cream-dark) ${finalScore}%)`;
+  }
+}
+
+function restartExam() {
+  // Reset final answers
+  Object.keys(finalAnswers).forEach(k => delete finalAnswers[k]);
+  // Reset option styles
+  document.querySelectorAll('#final-exam-questions .option').forEach(o => {
+    o.classList.remove('correct','wrong','selected');
+    o.style.pointerEvents = 'auto';
+  });
+  document.getElementById('check-final').disabled = false;
+  document.getElementById('final-exam-result').style.display = 'none';
+  document.getElementById('final-exam-questions').style.display = 'none';
+  document.getElementById('final-exam-intro').style.display = 'block';
+}
+</script>
+</body>
+</html>
