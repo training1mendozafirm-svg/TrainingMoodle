@@ -1,0 +1,1519 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Bar Complaints Lab | Compliance Training</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy: #0f2547;
+            --navy-mid: #1e3c72;
+            --navy-light: #2a5298;
+            --navy-pale: #dce8f7;
+            --navy-wash: #eef4fc;
+            --gold: #b8902a;
+            --gold-light: #d4a843;
+            --gold-pale: #fdf3d0;
+            --gold-wash: #fff8e6;
+            --cream: #f4f7fc;
+            --surface: #ffffff;
+            --border: #c9d9ee;
+            --text: #0f1e3a;
+            --text-muted: #4a5878;
+            --success: #0d6e4f;
+            --success-bg: #d1fae5;
+            --error: #b91c1c;
+            --error-bg: #fee2e2;
+            --warn-bg: #fffbeb;
+            --warn-border: #d4a843;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--cream);
+            font-family: 'Source Sans 3', Georgia, serif;
+            color: var(--text);
+            min-height: 100vh;
+            background-image:
+                radial-gradient(ellipse at 15% 0%, rgba(42,82,152,0.13) 0%, transparent 50%),
+                radial-gradient(ellipse at 85% 100%, rgba(184,144,42,0.11) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(220,232,247,0.4) 0%, transparent 70%);
+        }
+
+        .app-wrapper {
+            max-width: 820px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem 4rem;
+        }
+
+        /* ── HEADER ── */
+        .site-header {
+            text-align: center;
+            padding: 2rem 2rem 1.8rem;
+            background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 60%, #1a4a8a 100%);
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .site-header::before {
+            content: '';
+            position: absolute;
+            top: -30px; right: -30px;
+            width: 160px; height: 160px;
+            border-radius: 50%;
+            border: 28px solid rgba(212,168,67,0.15);
+        }
+        .site-header::after {
+            content: '';
+            position: absolute;
+            bottom: -20px; left: -20px;
+            width: 100px; height: 100px;
+            border-radius: 50%;
+            border: 18px solid rgba(212,168,67,0.1);
+        }
+        .site-header .eyebrow {
+            font-family: 'Source Sans 3', sans-serif;
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: var(--gold-light);
+            margin-bottom: 0.5rem;
+            position: relative;
+        }
+        .site-header h1 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: clamp(1.6rem, 4vw, 2.4rem);
+            font-weight: 800;
+            color: #ffffff;
+            line-height: 1.1;
+            position: relative;
+        }
+        .site-header .subtitle {
+            font-size: 0.88rem;
+            color: rgba(255,255,255,0.65);
+            margin-top: 0.4rem;
+            font-weight: 500;
+            position: relative;
+        }
+
+        /* ── CARD ── */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 24px -4px rgba(15,37,71,0.08);
+        }
+
+        /* ── BADGES ── */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: var(--navy);
+            color: var(--gold-light);
+            border-radius: 40px;
+            padding: 0.3rem 1rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 1.2rem;
+        }
+        .badge.case { background: var(--gold-pale); color: var(--navy); border: 1px solid var(--border); }
+
+        /* ── TYPOGRAPHY ── */
+        .card-title {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--navy);
+            margin-bottom: 0.5rem;
+            line-height: 1.3;
+        }
+        .card-subtitle {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 1.2rem;
+            line-height: 1.5;
+        }
+
+        /* ── SCENARIO BOX ── */
+        .scenario-box {
+            background: var(--navy-wash);
+            border-left: 3px solid var(--navy-light);
+            border-radius: 0 12px 12px 0;
+            padding: 1.2rem 1.4rem;
+            margin: 1.2rem 0 1.5rem;
+            font-size: 0.92rem;
+            line-height: 1.7;
+            color: var(--text);
+        }
+        .scenario-box .scenario-label {
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--navy-light);
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        /* ── PROGRESS ── */
+        .progress-wrap {
+            margin-bottom: 1.5rem;
+        }
+        .progress-track {
+            background: #e8e4dc;
+            border-radius: 40px;
+            height: 6px;
+            width: 100%;
+            overflow: hidden;
+        }
+        .progress-fill {
+            background: linear-gradient(90deg, var(--navy-mid), var(--gold));
+            height: 100%;
+            border-radius: 40px;
+            transition: width 0.4s ease;
+        }
+        .progress-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        /* ── OPTIONS ── */
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin: 1.4rem 0;
+        }
+        .option-btn {
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            padding: 1rem 1.2rem;
+            text-align: left;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.18s;
+            color: var(--text);
+            font-family: 'Source Sans 3', sans-serif;
+            line-height: 1.5;
+            position: relative;
+        }
+        .option-btn::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 3px;
+            border-radius: 10px 0 0 10px;
+            background: transparent;
+            transition: background 0.18s;
+        }
+        .option-btn:hover:not(:disabled) {
+            border-color: var(--navy-light);
+            background: #f0f4fc;
+        }
+        .option-btn:hover:not(:disabled)::before { background: var(--navy-light); }
+        .option-btn.selected {
+            border-color: var(--navy-mid);
+            background: #eef3fc;
+        }
+        .option-btn.selected::before { background: var(--navy-mid); }
+        .option-btn:disabled { cursor: default; }
+
+        /* ── FEEDBACK ── */
+        .feedback-panel {
+            display: none;
+            border-radius: 12px;
+            padding: 1.2rem 1.4rem;
+            margin-top: 1.2rem;
+            font-size: 0.88rem;
+            line-height: 1.65;
+            border: 1px solid;
+        }
+        .feedback-panel.show { display: block; }
+        .feedback-panel.correct {
+            background: #f0fdf7;
+            border-color: #86efac;
+            color: var(--success);
+        }
+        .feedback-panel.incorrect {
+            background: #fef2f2;
+            border-color: #fca5a5;
+            color: var(--error);
+        }
+        .feedback-panel .feedback-label {
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+            display: block;
+            opacity: 0.8;
+        }
+
+        /* ── NAVIGATION BUTTONS ── */
+        .nav-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.75rem;
+            margin-top: 1.8rem;
+            flex-wrap: wrap;
+        }
+        .btn {
+            font-family: 'Source Sans 3', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 700;
+            padding: 0.65rem 1.5rem;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.18s;
+            letter-spacing: 0.01em;
+        }
+        .btn-primary {
+            background: var(--navy);
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(15,37,71,0.18);
+        }
+        .btn-primary:hover:not(:disabled) { background: var(--navy-mid); transform: translateY(-1px); }
+        .btn-secondary {
+            background: transparent;
+            border: 1.5px solid var(--border);
+            color: var(--text-muted);
+        }
+        .btn-secondary:hover:not(:disabled) { border-color: var(--navy-light); color: var(--navy); }
+        .btn-gold {
+            background: var(--gold);
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(184,144,42,0.25);
+        }
+        .btn-gold:hover:not(:disabled) { background: var(--gold-light); transform: translateY(-1px); }
+        .btn-danger {
+            background: #dc2626;
+            color: #fff;
+        }
+        .btn-danger:hover:not(:disabled) { background: #b91c1c; }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+
+        /* ── CASE GRID ── */
+        .case-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin: 1.5rem 0 1rem;
+        }
+        @media(max-width:520px) { .case-grid { grid-template-columns: 1fr; } }
+        .case-tile {
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            padding: 1.2rem;
+            cursor: pointer;
+            transition: all 0.18s;
+            background: var(--surface);
+            text-align: left;
+            font-family: 'Source Sans 3', sans-serif;
+        }
+        .case-tile:hover:not(.done):not(.locked) {
+            border-color: var(--navy-light);
+            box-shadow: 0 6px 20px rgba(15,37,71,0.13);
+            transform: translateY(-2px);
+        }
+        .case-tile.done {
+            background: #e8faf2 !important;
+            border-color: #86efac !important;
+            cursor: default;
+        }
+        .case-tile.locked { opacity: 0.45; cursor: not-allowed; }
+        .case-tile .tile-number {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--navy);
+            line-height: 1;
+            margin-bottom: 0.4rem;
+        }
+        .case-tile.done .tile-number { color: var(--success); }
+        .case-tile .tile-name {
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+        .case-tile .tile-desc {
+            font-size: 0.85rem;
+            color: var(--text);
+            margin-top: 0.25rem;
+            font-weight: 600;
+        }
+        .case-tile .tile-status {
+            font-size: 0.72rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+            color: var(--success);
+        }
+
+        /* ── RESULTS ── */
+        .result-hero {
+            text-align: center;
+            padding: 1.5rem 0 1rem;
+        }
+        .result-score {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 4rem;
+            font-weight: 800;
+            color: var(--navy);
+            line-height: 1;
+        }
+        .result-pct {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--gold);
+            margin-top: 0.25rem;
+        }
+        .result-verdict {
+            display: inline-block;
+            margin-top: 0.75rem;
+            padding: 0.4rem 1.2rem;
+            border-radius: 40px;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+        .verdict-pass { background: var(--success-bg); color: var(--success); }
+        .verdict-fail { background: var(--error-bg); color: var(--error); }
+
+        .feedback-summary {
+            background: var(--gold-pale);
+            border: 1px solid #e8d9a0;
+            border-radius: 12px;
+            padding: 1.2rem 1.4rem;
+            font-size: 0.88rem;
+            line-height: 1.6;
+            color: var(--navy);
+            margin: 1.2rem 0;
+        }
+
+        .answer-record {
+            border-bottom: 1px solid var(--border);
+            padding: 0.9rem 0;
+            font-size: 0.84rem;
+        }
+        .answer-record:last-child { border-bottom: none; }
+        .answer-record .ar-case {
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+        .answer-record .ar-q {
+            font-weight: 600;
+            margin: 0.2rem 0;
+            color: var(--text);
+        }
+        .answer-record .ar-chosen { color: var(--text-muted); }
+        .ar-correct { color: var(--success); font-weight: 700; }
+        .ar-incorrect { color: var(--error); font-weight: 700; }
+        .ar-feedback { font-style: italic; margin-top: 0.2rem; font-size: 0.8rem; }
+
+        /* ── DETAILS TOGGLE ── */
+        details { margin-top: 1rem; }
+        details summary {
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--navy-light);
+            list-style: none;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            user-select: none;
+        }
+        details summary::before { content: '▶'; font-size: 0.65rem; transition: transform 0.2s; }
+        details[open] summary::before { transform: rotate(90deg); }
+
+        /* ── INTRO SCREEN ── */
+        .welcome-banner {
+            background: var(--navy);
+            border-radius: 16px;
+            padding: 2rem 2rem 1.8rem;
+            color: #fff;
+            margin-bottom: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .welcome-banner::after {
+            content: '';
+            position: absolute;
+            right: -40px; top: -40px;
+            width: 180px; height: 180px;
+            border-radius: 50%;
+            border: 30px solid rgba(212,168,67,0.12);
+        }
+        .welcome-banner .wb-eyebrow {
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--gold-light);
+            margin-bottom: 0.5rem;
+        }
+        .welcome-banner h2 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 1.5rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 0.6rem;
+        }
+        .welcome-banner p {
+            font-size: 0.88rem;
+            opacity: 0.85;
+            line-height: 1.6;
+        }
+
+        /* ── INSTRUCTIONS ── */
+        .instructions-block {
+            background: var(--gold-wash);
+            border: 1px solid #e8d9a0;
+            border-radius: 12px;
+            padding: 1.4rem;
+            margin: 1.2rem 0;
+        }
+        .instructions-block .instr-title {
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 1rem;
+        }
+        .instr-step {
+            display: flex;
+            gap: 0.9rem;
+            align-items: flex-start;
+            margin-bottom: 0.9rem;
+        }
+        .instr-step:last-child { margin-bottom: 0; }
+        .instr-num {
+            flex-shrink: 0;
+            width: 1.5rem;
+            height: 1.5rem;
+            background: var(--navy);
+            color: #fff;
+            border-radius: 50%;
+            font-size: 0.7rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 0.1rem;
+        }
+        .instr-text {
+            font-size: 0.88rem;
+            line-height: 1.5;
+            color: var(--text);
+        }
+        .instr-text strong { color: var(--navy); }
+
+        /* ── INPUT ── */
+        .input-group {
+            margin: 1.5rem 0;
+        }
+        .input-label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+        .input-field {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-family: 'Source Sans 3', sans-serif;
+            color: var(--text);
+            background: var(--surface);
+            transition: border-color 0.18s;
+            outline: none;
+        }
+        .input-field:focus { border-color: var(--navy-mid); }
+        .input-error {
+            font-size: 0.78rem;
+            color: var(--error);
+            margin-top: 0.35rem;
+            display: none;
+        }
+
+        /* ── BLOCKED SCREEN ── */
+        .blocked-box {
+            text-align: center;
+            padding: 2rem 1rem;
+        }
+        .blocked-icon { font-size: 3rem; margin-bottom: 1rem; }
+        .blocked-title {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--navy);
+            margin-bottom: 0.5rem;
+        }
+        .blocked-msg { font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; }
+
+        /* ── ADMIN PANEL ── */
+        .admin-header {
+            background: var(--navy);
+            border-radius: 12px;
+            padding: 1.2rem 1.5rem;
+            color: #fff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.2rem;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+        .admin-header .ah-title {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+        .admin-header .ah-sub {
+            font-size: 0.75rem;
+            opacity: 0.7;
+            margin-top: 0.15rem;
+        }
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+        .admin-table th {
+            background: #f7f5f0;
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            padding: 0.6rem 0.9rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        .admin-table td {
+            padding: 0.75rem 0.9rem;
+            border-bottom: 1px solid #f0ece4;
+            vertical-align: top;
+        }
+        .admin-table tr:last-child td { border-bottom: none; }
+        .admin-table .pass-chip {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 700;
+        }
+        .admin-table .pass-chip.pass { background: var(--success-bg); color: var(--success); }
+        .admin-table .pass-chip.fail { background: var(--error-bg); color: var(--error); }
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+            font-size: 0.88rem;
+        }
+        .admin-detail-row td {
+            padding: 0 0.9rem 0.75rem;
+            background: #faf8f4;
+        }
+        .detail-item {
+            font-size: 0.8rem;
+            padding: 0.35rem 0;
+            border-bottom: 1px dashed #e4ddd0;
+            display: flex;
+            gap: 0.5rem;
+            align-items: baseline;
+        }
+        .detail-item:last-child { border-bottom: none; }
+        .detail-item .di-q { flex: 1; color: var(--text-muted); }
+        .detail-item .di-ans { font-weight: 600; color: var(--text); }
+        .detail-badge { font-size: 0.7rem; font-weight: 700; }
+        .detail-badge.ok { color: var(--success); }
+        .detail-badge.err { color: var(--error); }
+
+        /* ── PASSWORD MODAL ── */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15,37,71,0.55);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal-box {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 380px;
+            box-shadow: 0 24px 64px rgba(0,0,0,0.2);
+        }
+        .modal-box h3 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--navy);
+            margin-bottom: 0.4rem;
+        }
+        .modal-box p { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.2rem; }
+        .modal-error {
+            font-size: 0.78rem;
+            color: var(--error);
+            margin-top: 0.35rem;
+            display: none;
+        }
+        .modal-row {
+            display: flex;
+            gap: 0.6rem;
+            margin-top: 1.2rem;
+        }
+
+        /* ── RESPONSIVE ── */
+        @media(max-width:600px) {
+            .card { padding: 1.4rem; }
+            .result-score { font-size: 3rem; }
+        }
+
+        /* ── UTILITY ── */
+        .divider { border: none; border-top: 1px solid var(--border); margin: 1.4rem 0; }
+        .text-center { text-align: center; }
+        .mt-1 { margin-top: 0.5rem; }
+        .mt-2 { margin-top: 1rem; }
+        .tag-keyword {
+            background: #eef2ff;
+            color: var(--navy);
+            border-radius: 4px;
+            padding: 0.1rem 0.4rem;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+        .section-heading {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--navy);
+            margin-bottom: 0.75rem;
+        }
+    </style>
+</head>
+<body>
+<div class="app-wrapper">
+    <header class="site-header">
+        <div class="eyebrow">The Mendoza Law Firm · Compliance Training</div>
+        <h1>Bar Complaints Lab</h1>
+        <p class="subtitle">Simulador de diligencia ante quejas al Bar</p>
+    </header>
+    <div id="app"></div>
+</div>
+
+<!-- Admin password modal -->
+<div class="modal-overlay" id="adminModal">
+    <div class="modal-box">
+        <h3>🔒 Panel de Administrador</h3>
+        <p>Ingresa la contraseña para acceder al panel de resultados.</p>
+        <label class="input-label" for="adminPassInput">Contraseña</label>
+        <input class="input-field" type="password" id="adminPassInput" placeholder="••••••••••" autocomplete="off">
+        <div class="modal-error" id="adminPassError">Contraseña incorrecta. Intenta de nuevo.</div>
+        <div class="modal-row">
+            <button class="btn btn-secondary" id="adminModalCancel" style="flex:1">Cancelar</button>
+            <button class="btn btn-primary" id="adminModalConfirm" style="flex:1">Ingresar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+// STORAGE HELPERS
+// ═══════════════════════════════════════════════════
+const STORAGE_KEY = "barComplaintsLab_v2";
+const ADMIN_PASS  = "Moodle26";
+const MAX_SCORE   = 15;
+
+function loadAllRecords() {
+    try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : {};
+    } catch(e) { return {}; }
+}
+function saveAllRecords(data) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+function normalizeKey(name) {
+    return name.trim().toLowerCase().replace(/\s+/g, " ");
+}
+
+// ═══════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════
+let currentView = "welcome";
+let userName = "";
+let isAdmin = false;
+let completedCases = { case1:false, case2:false, case3:false, case4:false };
+let totalScore = 0;
+let answeredCount = 0;
+let answerRecords = [];
+let tree1Stage = "1";
+let tree2Stage = "1";
+let linear3Index = 0;
+let linear4Index = 0;
+let tempSelected = null;
+let linearTemp = null;
+
+// ═══════════════════════════════════════════════════
+// CASE DATA
+// ═══════════════════════════════════════════════════
+const tree1Stages = {
+    "1": {
+        title: "Etapa 1 · Solicitud de expediente por tercero",
+        scenario: "La Sra. Martínez contrató a la firma para un caso de Visa U hace 18 meses. Durante los últimos 8 meses, no ha habido ninguna nota de seguimiento en el CRM. Nadie ha intentado contactarla de forma proactiva. Hoy, un abogado externo envía un correo solicitando el expediente completo de la Sra. Martínez, indicando que ella está «considerando nuevas opciones legales». No hay autorización firmada por la cliente. El equipo no sabe si la clienta cambió de domicilio o simplemente dejó de comunicarse.",
+        options: [
+            { text: "A) Entregar el expediente inmediatamente al abogado externo para mostrar cooperación y evitar que la clienta se enoje más.", score: 0, feedback: "Error grave. Entregar el expediente sin autorización escrita viola la confidencialidad y el privilegio abogado-cliente. Además, se pierde la oportunidad de retener a la clienta." },
+            { text: "B) Negarse a cualquier contacto con el abogado externo sin consultar con la dirección.", score: 0, feedback: "Demasiado pasivo. No es incorrecto pedir asesoría interna, pero el equipo debe actuar: contactar a la clienta de forma inmediata es la prioridad." },
+            { text: "C) Contactar de inmediato a la Sra. Martínez para confirmar su decisión, documentar el intento de comunicación y no entregar ningún expediente hasta tener una autorización escrita firmada por ella.", score: 1, feedback: "Correcto. Proteger la confidencialidad, documentar el contacto y obtener autorización escrita son los pasos que minimizan el riesgo de queja ante el Bar." }
+        ],
+        nextBranch: (score) => score === 1 ? "2_good" : "2_bad"
+    },
+    "2_good": {
+        title: "Etapa 2 · Contacto exitoso con la clienta",
+        scenario: "La Sra. Martínez responde y confirma que sí está considerando cambiar de abogado, pero dice que nunca recibió actualizaciones de su caso. Quiere su expediente. Ya firmó la autorización de liberación.",
+        options: [
+            { text: "A) Liberar el expediente inmediatamente sin ningún comentario adicional, para no «molestar» más a la clienta.", score: 0, feedback: "Incompleto. El expediente debe entregarse —la clienta tiene ese derecho— pero perder esta oportunidad de documentar las comunicaciones es un error estratégico para la defensa de la firma." },
+            { text: "B) Entregar el expediente según lo autorizado, programar una llamada de retención con la clienta para abordar el problema de falta de comunicación, y documentar todo en el CRM.", score: 1, feedback: "Correcto. Cumples con la obligación legal de liberar el expediente, creas un registro defensivo y abres la posibilidad de retener a la clienta." }
+        ],
+        nextBranch: () => "3_good"
+    },
+    "2_bad": {
+        title: "Etapa 2 · Sin respuesta de la clienta",
+        scenario: "Después de dos intentos de contacto (llamada y email), la Sra. Martínez no ha respondido. El abogado externo envía un segundo correo más formal, ahora con copia al State Bar.",
+        options: [
+            { text: "A) Ignorar el correo del abogado externo; si la clienta no responde, no hay nada que hacer.", score: 0, feedback: "Peligroso. Ignorar comunicaciones formales con copia al Bar puede interpretarse como negligencia o falta de cooperación." },
+            { text: "B) Enviar una respuesta formal al abogado externo indicando que se han intentado los contactos requeridos, que no hay autorización para liberar el expediente, y escalar el caso a Compliance y a la dirección inmediatamente.", score: 1, feedback: "Correcto. La respuesta escrita protege a la firma, demuestra diligencia y el escalamiento interno es obligatorio cuando hay contacto directo con el Bar." }
+        ],
+        nextBranch: () => "3_good"
+    },
+    "3_good": {
+        title: "Etapa 3 · Evaluación del proceso interno",
+        scenario: "Independientemente del resultado con la Sra. Martínez, el director de Compliance quiere saber cómo prevenir casos similares. Se identifica que el CRM tiene 23 casos más con más de 6 meses sin nota de seguimiento.",
+        options: [
+            { text: "A) Mandar un email masivo a todos los clientes afectados explicando la demora, sin coordinar el mensaje con el equipo legal.", score: 0, feedback: "Riesgoso. Comunicaciones no coordinadas pueden crear inconsistencias, generar más quejas y comprometer la defensa legal de la firma." },
+            { text: "B) Diseñar un protocolo de alerta preventiva en el CRM que detecte casos sin nota de seguimiento a los 30, 60 y 90 días, y asignar responsables de contacto proactivo antes de que el cliente busque a otro abogado.", score: 1, feedback: "Excelente. La prevención sistémica es la única solución duradera. Un protocolo estructurado en el CRM con alertas automáticas elimina la dependencia de la memoria individual." }
+        ]
+    }
+};
+
+const tree2Stages = {
+    "1": {
+        title: "Etapa 1 · Llamada agresiva del cliente",
+        scenario: "El Sr. Domínguez llama furioso porque su audiencia de Visa T fue cancelada sin previo aviso (en realidad fue reprogramada, pero él no recibió el correo de notificación). Dice que va a presentar una queja ante el Bar ese mismo día si no habla con el abogado principal en los próximos 30 minutos. El asistente legal recibe la llamada.",
+        options: [
+            { text: "A) Decirle al cliente que el abogado «no está disponible en este momento» y que lo llamarán «cuando puedan».", score: 0, feedback: "Error clásico de desescalamiento fallido. Respuestas vagas aumentan la frustración y confirman en la mente del cliente que la firma no lo toma en serio." },
+            { text: "B) Reconocer la molestia del cliente, disculparse por la falta de notificación efectiva (sin admitir negligencia grave), explicar brevemente que la audiencia fue reprogramada —no cancelada— y comprometerse con una llamada del abogado en los próximos 45 minutos. Documentar el incidente en el CRM de inmediato.", score: 1, feedback: "Correcto. Validar la molestia, corregir la percepción errónea con hechos concretos y fijar un tiempo de respuesta específico son los tres pilares del manejo de quejas telefónicas de alto riesgo." }
+        ],
+        nextBranch: (score) => score === 1 ? "2_good" : "2_bad"
+    },
+    "2_good": {
+        title: "Etapa 2 · Preparación para la llamada del abogado",
+        scenario: "El abogado va a llamar al Sr. Domínguez en 45 minutos. Antes de la llamada, el asistente legal debe preparar el expediente. ¿Qué información es crítica tener lista?",
+        options: [
+            { text: "A) El historial completo de comunicaciones con el cliente, la nueva fecha de audiencia, y los documentos pendientes que el cliente debe aportar.", score: 1, feedback: "Correcto. El abogado necesita exactamente eso para manejar la llamada con autoridad: tener los hechos, la solución concreta y los próximos pasos listos antes de marcar." },
+            { text: "B) Solo el número de caso y la nueva fecha de audiencia.", score: 0, feedback: "Insuficiente. Sin el historial de comunicaciones, el abogado no puede responder si el cliente alega que «nunca le avisaron nada». Los hechos completos son la defensa." }
+        ],
+        nextBranch: () => "3_good"
+    },
+    "2_bad": {
+        title: "Etapa 2 · El cliente escala al Bar",
+        scenario: "Después de la respuesta vaga del asistente, el Sr. Domínguez efectivamente presentó una queja informal ante el State Bar. La firma recibe una notificación de investigación preliminar.",
+        options: [
+            { text: "A) Entrar en pánico y llamar al cliente para pedirle que retire la queja, ofreciéndole un descuento en honorarios.", score: 0, feedback: "Contraproducente. Ofrecer incentivos económicos para retirar una queja puede interpretarse como una admisión de culpa y agrava la situación." },
+            { text: "B) Notificar de inmediato a la dirección y a Compliance, compilar todo el historial del caso y comunicaciones con el cliente, y asignar a un abogado senior para coordinar la respuesta formal al Bar.", score: 1, feedback: "Correcto. El protocolo estándar de respuesta a quejas: transparencia interna, documentación completa y representación adecuada ante el Bar." }
+        ],
+        nextBranch: () => "3_good"
+    },
+    "3_good": {
+        title: "Etapa 3 · Prevención futura",
+        scenario: "Tras el incidente, Compliance quiere mejorar el sistema de notificación de audiencias. Actualmente las fechas se comunican solo por correo electrónico.",
+        options: [
+            { text: "A) Implementar un sistema de notificación multi-canal: email + SMS + llamada de confirmación, con acuse de recibo documentado en el CRM para cada audiencia programada.", score: 1, feedback: "Correcto. La notificación multi-canal con confirmación documentada elimina el argumento de «no me avisaron» y crea un escudo defensivo claro ante el Bar." },
+            { text: "B) Pedir a los clientes que sigan el caso ellos mismos a través del portal público del tribunal.", score: 0, feedback: "Inaceptable. La firma tiene la obligación profesional de mantener informado al cliente. Delegarle esa responsabilidad al cliente es una falla ética y una garantía de quejas futuras." }
+        ]
+    }
+};
+
+const case3Description = {
+    title: "Caso 3 · Visa T + RFE: El cliente que no entiende el proceso",
+    scenario: "La Sra. López contrató a la firma para una petición de Visa T hace 7 meses. Hace 3 días, USCIS emitió un RFE (Request for Evidence) solicitando evidencia adicional de victimización. El asistente legal recibió el RFE pero no notificó al abogado ni al cliente hasta hoy, cuando la clienta llamó preguntando por el estado de su caso. La clienta está alterada porque cree que el RFE significa que su caso fue rechazado. Tiene 87 días para responder.",
+    questions: [
+        { text: "IDENTIFICAR: ¿Cuál es la red flag más grave en esta situación?", options: [
+            { text: "Que USCIS emitió un RFE, lo cual indica que el caso tiene problemas serios.", score: 0, feedback: "Incorrecto. Los RFEs son comunes y no indican necesariamente que el caso tiene problemas graves. La red flag real está en el proceso interno." },
+            { text: "Que el asistente legal recibió el RFE hace 3 días y no lo notificó al abogado ni a la clienta, creando una demora innecesaria en un plazo ya acotado.", score: 1, feedback: "Correcto. La falla de comunicación interna es la red flag más grave. Un RFE con 87 días de plazo es manejable; un RFE descubierto tarde por falta de flujo interno es un riesgo serio." }
+        ] },
+        { text: "PREVENIR: ¿Qué documento o proceso habría evitado que la clienta creyera que el RFE es un rechazo?", options: [
+            { text: "Un tutorial en video sobre cómo funciona el proceso de Visa T.", score: 0, feedback: "Útil pero insuficiente como medida preventiva primaria. El problema es la comunicación proactiva, no solo la educación pasiva." },
+            { text: "Un consentimiento informado al inicio del caso que explique que los RFEs son comunes, no significan rechazo, y que la firma se compromete a notificarlos en un plazo máximo de 48 horas.", score: 1, feedback: "Correcto. Educar al cliente sobre el proceso y fijar expectativas claras desde el inicio reduce el pánico y la desconfianza cuando ocurren eventos procesales normales." }
+        ] },
+        { text: "MANEJAR: En la llamada inicial de la clienta (alterada), ¿cuál es la mejor respuesta en los primeros 5 minutos?", options: [
+            { text: "Decirle: «Tranquila, no es para tanto, todos los casos tienen RFE. No se preocupe».", score: 0, feedback: "Minimiza la molestia de la clienta. Ella se siente ignorada y eso escala el conflicto en lugar de desescalarlo." },
+            { text: "Disculparse por la demora en la notificación (sin admitir negligencia grave), explicar que el RFE es una oportunidad para complementar evidencia —no un rechazo—, y ofrecer que un abogado la llame en la siguiente hora para detallar los pasos a seguir.", score: 1, feedback: "Correcto. Aborda el hecho objetivo (la demora), corrige la percepción errónea del RFE, ofrece una solución inmediata y concreta, y desescala la situación." }
+        ] },
+        { text: "MANEJAR: Después de que el abogado llamó a la clienta y explicó el RFE, ella sigue molesta pero accede a esperar. ¿Qué acción es crítica en las siguientes 24 horas?", options: [
+            { text: "Borrar el registro de la llamada del CRM para que no quede evidencia de la queja y evitar que se use en el futuro.", score: 0, feedback: "Fraude documental. Borrar o alterar registros es una violación ética grave que podría resultar en sanciones disciplinarias severas." },
+            { text: "Enviar un email resumen de la llamada a la clienta, explicando nuevamente el RFE, los pasos a seguir y el nuevo compromiso de comunicación (actualizaciones cada 15 días).", score: 1, feedback: "Correcto. El email resumen actúa como escudo defensivo documentado: demuestra que la firma actuó diligentemente después del incidente y establece expectativas claras hacia adelante." }
+        ] }
+    ]
+};
+
+const case4Description = {
+    title: "Caso Extra · Abogado que no responde notificación del Bar",
+    scenario: "La firma recibe una notificación del State Bar sobre una queja presentada por un cliente insatisfecho. El abogado asignado al caso abre la carta, la lee rápidamente y comenta: «Esto no es grave, ya lo manejo yo». Pasados 20 días, el abogado no ha hecho nada. El asistente legal encuentra la carta en su escritorio, aún sin responder. El plazo para contestar es de 30 días. Quedan 10 días.",
+    questions: [
+        { text: "IDENTIFICAR: ¿Cuál es la red flag más grave en la conducta del abogado?", options: [
+            { text: "Abrió la carta pero no la archivó en el expediente del cliente.", score: 0, feedback: "Es un descuido administrativo importante, pero no es la red flag más grave. El problema central es estructural." },
+            { text: "Decidió unilateralmente que «no es grave» y no notificó a Compliance ni a la dirección, dejando avanzar el plazo sin acción.", score: 1, feedback: "Correcto. La falta de escalamiento y la subestimación unilateral del riesgo son los errores más graves: pueden llevar a una violación ética adicional por no responder dentro del plazo." }
+        ] },
+        { text: "PREVENIR: ¿Qué política interna habría evitado que un abogado retuviera una notificación del Bar sin escalarla?", options: [
+            { text: "Contratar un seguro de malpractice que cubra multas por demora en responder quejas.", score: 0, feedback: "No previene la omisión, solo mitiga el daño económico posterior. La prevención debe ser procesal y cultural, no solo financiera." },
+            { text: "Regla de notificación obligatoria a Compliance dentro de 24 horas de recibir cualquier comunicación del State Bar, con registro de acuse en el CRM.", score: 1, feedback: "Correcto. La obligación de escalar en un plazo corto y el registro electrónico aseguran que ninguna queja quede retenida por una decisión individual." }
+        ] },
+        { text: "MANEJAR: Ya han pasado 20 días y quedan 10 días de plazo. ¿Cuál es la mejor acción ahora?", options: [
+            { text: "Redactar una respuesta apresurada negando los hechos y enviarla al Bar para cumplir con el plazo.", score: 0, feedback: "Improvisado y peligroso. Una respuesta sin análisis ni evidencia de respaldo puede empeorar la situación y no constituye una defensa adecuada ante el Bar." },
+            { text: "Notificar de inmediato a la dirección, contactar a un abogado especialista en defensa disciplinaria, solicitar una extensión de plazo si es posible, y preparar una respuesta completa con toda la documentación de respaldo.", score: 1, feedback: "Correcto. Transparencia interna, asesoría experta y gestión activa del plazo son los tres pasos correctos bajo presión de tiempo." }
+        ] }
+    ]
+};
+
+// ═══════════════════════════════════════════════════
+// PERSISTENCE
+// ═══════════════════════════════════════════════════
+function loadUserSession(name) {
+    const all = loadAllRecords();
+    const key = normalizeKey(name);
+    if (all[key]) {
+        const s = all[key];
+        completedCases = s.completedCases || { case1:false, case2:false, case3:false, case4:false };
+        totalScore     = s.totalScore || 0;
+        answeredCount  = s.answeredCount || 0;
+        answerRecords  = s.answerRecords || [];
+    } else {
+        completedCases = { case1:false, case2:false, case3:false, case4:false };
+        totalScore = 0; answeredCount = 0; answerRecords = [];
+    }
+}
+
+function saveUserSession() {
+    const all = loadAllRecords();
+    const key = normalizeKey(userName);
+    all[key] = { name: userName, timestamp: new Date().toISOString(), completedCases, totalScore, answeredCount, answerRecords };
+    saveAllRecords(all);
+}
+
+function userHasCompleted(name) {
+    const all = loadAllRecords();
+    const key = normalizeKey(name);
+    if (!all[key]) return false;
+    const s = all[key];
+    return s.completedCases && Object.values(s.completedCases).every(v => v);
+}
+
+function registerAnswer(caseName, questionText, selectedOptionText, isCorrect, feedback, score) {
+    answerRecords.push({ caseName, questionText, selectedOption: selectedOptionText, correct: isCorrect, feedback, userScore: score });
+    saveUserSession();
+}
+
+// ═══════════════════════════════════════════════════
+// RENDER ENGINE
+// ═══════════════════════════════════════════════════
+function render() {
+    const app = document.getElementById("app");
+    if (!app) return;
+    if (currentView === "welcome")              renderWelcome(app);
+    else if (currentView === "blocked")         renderBlocked(app);
+    else if (currentView === "menu")            renderMenu(app);
+    else if (currentView === "case1_tree")      renderTree(app, tree1Stages, tree1Stage, "case1");
+    else if (currentView === "case2_tree")      renderTree(app, tree2Stages, tree2Stage, "case2");
+    else if (currentView === "case3_linear_intro") renderLinearIntro(app, case3Description, "case3");
+    else if (currentView === "case3_linear_q") renderLinearQuestion(app, case3Description.questions, linear3Index, "case3");
+    else if (currentView === "case4_linear_intro") renderLinearIntro(app, case4Description, "case4");
+    else if (currentView === "case4_linear_q") renderLinearQuestion(app, case4Description.questions, linear4Index, "case4");
+    else if (currentView === "results")         renderResults(app);
+    else if (currentView === "admin")           renderAdmin(app);
+}
+
+// ═══════════════════════════════════════════════════
+// VIEWS
+// ═══════════════════════════════════════════════════
+
+function renderWelcome(container) {
+    container.innerHTML = `
+        <div class="welcome-banner">
+            <div class="wb-eyebrow">Compliance Diligence</div>
+            <h2>Bar Complaints Lab</h2>
+            <p>Practica cómo identificar, prevenir y manejar situaciones de riesgo de quejas ante el State Bar. Cada caso es una situación real adaptada para entrenamiento.</p>
+        </div>
+        <div class="card">
+            <div class="badge">📋 Instrucciones</div>
+            <div class="instructions-block">
+                <div class="instr-title">Cómo funciona este simulador</div>
+                <div class="instr-step"><div class="instr-num">1</div><div class="instr-text">Completa <strong>4 casos</strong> basados en situaciones reales de riesgo de quejas ante el Bar.</div></div>
+                <div class="instr-step"><div class="instr-num">2</div><div class="instr-text">Cada caso incluye un escenario detallado con <strong>opciones realistas</strong>. No hay respuestas obvias: lee con cuidado.</div></div>
+                <div class="instr-step"><div class="instr-num">3</div><div class="instr-text">Recibirás <strong>feedback específico</strong> después de cada respuesta para entender el razonamiento correcto.</div></div>
+                <div class="instr-step"><div class="instr-num">4</div><div class="instr-text">Al finalizar, obtendrás tu <strong>calificación global</strong>. El mínimo para aprobar es <strong>85%</strong>.</div></div>
+                <div class="instr-step"><div class="instr-num">5</div><div class="instr-text">El simulador se puede completar <strong>una sola vez</strong> por participante. Tu progreso se guarda automáticamente.</div></div>
+            </div>
+            <div class="input-group">
+                <label class="input-label" for="nameInput">Tu nombre completo</label>
+                <input class="input-field" type="text" id="nameInput" placeholder="Ej. Ana García López" autocomplete="off" maxlength="80">
+                <div class="input-error" id="nameError">Por favor escribe tu nombre completo para continuar.</div>
+            </div>
+            <div class="nav-row" style="justify-content:flex-end;">
+                <button class="btn btn-secondary" id="adminAccessBtn">🔒 Administrador</button>
+                <button class="btn btn-primary" id="startSimBtn">Comenzar simulador →</button>
+            </div>
+        </div>
+    `;
+    document.getElementById("startSimBtn").onclick = () => {
+        const nameField = document.getElementById("nameInput");
+        const nameErr   = document.getElementById("nameError");
+        const name = nameField.value.trim();
+        if (!name) {
+            nameErr.style.display = "block";
+            nameField.focus();
+            return;
+        }
+        nameErr.style.display = "none";
+        userName = name;
+        isAdmin  = (normalizeKey(name) === "admin");
+        if (isAdmin) {
+            // Admin: always fresh start
+            completedCases = { case1:false, case2:false, case3:false, case4:false };
+            totalScore = 0; answeredCount = 0; answerRecords = [];
+            tree1Stage = "1"; tree2Stage = "1"; linear3Index = 0; linear4Index = 0;
+            saveUserSession();
+            currentView = "menu";
+            render();
+        } else if (userHasCompleted(name)) {
+            currentView = "blocked";
+            render();
+        } else {
+            loadUserSession(name);
+            // Reset tree positions in case of partial session
+            tree1Stage = "1"; tree2Stage = "1"; linear3Index = 0; linear4Index = 0;
+            currentView = "menu";
+            render();
+        }
+    };
+    document.getElementById("adminAccessBtn").onclick = () => {
+        openAdminModal();
+    };
+    // Allow Enter key on name field
+    document.getElementById("nameInput").onkeydown = (e) => {
+        if (e.key === "Enter") document.getElementById("startSimBtn").click();
+    };
+}
+
+function renderBlocked(container) {
+    container.innerHTML = `
+        <div class="card">
+            <div class="blocked-box">
+                <div class="blocked-icon">🔒</div>
+                <div class="blocked-title">Simulador ya completado</div>
+                <p class="blocked-msg">
+                    <strong>${userName}</strong>, este simulador ya fue completado anteriormente en este dispositivo.<br><br>
+                    Cada participante puede completar el simulador <strong>una sola vez</strong>. Si crees que esto es un error, comunícate con el equipo de Training.
+                </p>
+                <button class="btn btn-secondary mt-2" id="backToWelcome" style="margin-top:1.5rem;">← Volver</button>
+            </div>
+        </div>
+    `;
+    document.getElementById("backToWelcome").onclick = () => { currentView = "welcome"; render(); };
+}
+
+function renderMenu(container) {
+    const allCasesCompleted = Object.values(completedCases).every(v => v);
+    const completedCount = Object.values(completedCases).filter(v => v).length;
+    const pct = (completedCount / 4) * 100;
+    const cases = [
+        { id:"case1", label:"Caso 1", name:"Silent but Deadly", icon:"🤫", desc:"Expediente, terceros y seguimiento CRM" },
+        { id:"case2", label:"Caso 2", name:"Perfil Loud",        icon:"📢", desc:"Clientes agresivos y escalamiento" },
+        { id:"case3", label:"Caso 3", name:"Visa T + RFE",       icon:"📄", desc:"Comunicación de RFE y manejo de expectativas" },
+        { id:"case4", label:"Caso 4", name:"Abogado y Bar",      icon:"⚖️", desc:"Notificaciones del State Bar sin respuesta" }
+    ];
+    const tileColors = [
+        { bg: '#eef4fc', border: '#b8ccf0' },
+        { bg: '#fff8e6', border: '#e0cc8a' },
+        { bg: '#f0f5ff', border: '#b8ccf0' },
+        { bg: '#fdf6e3', border: '#e8d9a0' }
+    ];
+    let tilesHtml = cases.map((c, i) => {
+        const done = completedCases[c.id];
+        const col = tileColors[i];
+        const style = done ? '' : `background:${col.bg};border-color:${col.border};`;
+        return `<div class="case-tile ${done ? 'done' : ''}" id="tile_${c.id}" style="${style}">
+            <div class="tile-number">${done ? '✓' : c.icon}</div>
+            <div class="tile-name">${c.label}</div>
+            <div class="tile-desc">${c.name}</div>
+            <div style="font-size:0.78rem;color:var(--text-muted);margin-top:0.2rem;">${c.desc}</div>
+            ${done ? '<div class="tile-status">✅ Completado</div>' : ''}
+        </div>`;
+    }).join('');
+
+    const allDone = answeredCount >= MAX_SCORE;
+    container.innerHTML = `
+        <div class="card" style="background:var(--navy-wash);border-color:var(--border);">
+            <div class="badge">${isAdmin ? '🛠 Modo Admin' : '📋 Selección de casos'}</div>
+            <div class="progress-wrap">
+                <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+                <div class="progress-labels"><span>Puntaje: ${totalScore} / ${MAX_SCORE}</span><span>${completedCount} de 4 casos completados</span></div>
+            </div>
+            <div class="section-heading">Elige un caso para practicar</div>
+            <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:0.5rem;">Puedes completar los casos en cualquier orden. Una vez que ingreses a un caso y respondas, no podrás cambiar tus respuestas.</p>
+            <div class="case-grid">${tilesHtml}</div>
+            ${allCasesCompleted ? `<div class="nav-row" style="justify-content:center;margin-top:1rem;"><button class="btn btn-gold" id="finalizeBtn">📊 Ver resultados finales →</button></div>` : ''}
+            ${isAdmin ? `<div class="nav-row" style="justify-content:center;"><button class="btn btn-secondary" id="adminViewBtn">🔒 Ver panel de administrador</button></div>` : ''}
+        </div>
+    `;
+    cases.forEach(c => {
+        const tile = document.getElementById("tile_" + c.id);
+        if (tile && !completedCases[c.id]) {
+            tile.onclick = () => {
+                if (c.id === "case1") { currentView = "case1_tree"; tree1Stage = "1"; }
+                else if (c.id === "case2") { currentView = "case2_tree"; tree2Stage = "1"; }
+                else if (c.id === "case3") { currentView = "case3_linear_intro"; }
+                else if (c.id === "case4") { currentView = "case4_linear_intro"; }
+                render();
+            };
+        }
+    });
+    document.getElementById("finalizeBtn")?.addEventListener("click", () => { currentView = "results"; render(); });
+    document.getElementById("adminViewBtn")?.addEventListener("click", () => { currentView = "admin"; render(); });
+}
+
+function renderTree(container, stages, stageKey, caseId) {
+    const stage = stages[stageKey];
+    if (!stage) return;
+    const caseLabel = caseId === "case1" ? "Caso 1 · Silent but Deadly" : "Caso 2 · Perfil Loud";
+    container.innerHTML = `
+        <div class="card">
+            <div class="badge case">🌲 ${caseLabel}</div>
+            <div class="card-title">${stage.title}</div>
+            <div class="scenario-box"><span class="scenario-label">Escenario</span>${stage.scenario}</div>
+            <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:0.25rem;font-weight:600;">Selecciona la mejor acción:</p>
+            <div class="options-list" id="optionsList"></div>
+            <div class="feedback-panel" id="feedbackArea"></div>
+            <div class="nav-row">
+                <button class="btn btn-secondary" id="backMenu">↩ Menú principal</button>
+                <button class="btn btn-primary" id="nextStageBtn" disabled>Siguiente etapa →</button>
+            </div>
+        </div>
+    `;
+    const optsDiv = document.getElementById("optionsList");
+    stage.options.forEach(opt => {
+        const btn = document.createElement("button");
+        btn.className = "option-btn";
+        btn.innerText = opt.text;
+        btn.onclick = () => {
+            document.querySelectorAll(".option-btn").forEach(b => { b.classList.remove("selected"); b.disabled = false; });
+            btn.classList.add("selected");
+            document.querySelectorAll(".option-btn").forEach(b => b.disabled = true);
+            const fb = document.getElementById("feedbackArea");
+            const isOk = opt.score === 1;
+            fb.className = `feedback-panel show ${isOk ? 'correct' : 'incorrect'}`;
+            fb.innerHTML = `<span class="feedback-label">${isOk ? '✓ Correcto' : '✗ Incorrecto'} · Retroalimentación</span>${opt.feedback}`;
+            tempSelected = { score: opt.score, next: stage.nextBranch ? stage.nextBranch(opt.score) : null, text: opt.text, feedback: opt.feedback };
+            document.getElementById("nextStageBtn").disabled = false;
+        };
+        optsDiv.appendChild(btn);
+    });
+    document.getElementById("backMenu").onclick = () => { currentView = "menu"; render(); };
+    document.getElementById("nextStageBtn").onclick = () => {
+        if (!tempSelected) return;
+        const isCorrect = tempSelected.score === 1;
+        registerAnswer(caseId === "case1" ? "Caso 1" : "Caso 2", stage.title, tempSelected.text, isCorrect, tempSelected.feedback, tempSelected.score);
+        totalScore += tempSelected.score;
+        answeredCount++;
+        // Determine next stage
+        if (stageKey === "1" && tempSelected.next) {
+            if (caseId === "case1") tree1Stage = tempSelected.next;
+            else tree2Stage = tempSelected.next;
+        } else if (stageKey === "2_good" || stageKey === "2_bad") {
+            if (caseId === "case1") tree1Stage = "3_good";
+            else tree2Stage = "3_good";
+        } else {
+            if (caseId === "case1") completedCases.case1 = true;
+            else completedCases.case2 = true;
+            saveUserSession();
+            currentView = "menu";
+            tempSelected = null;
+            render();
+            return;
+        }
+        tempSelected = null;
+        render();
+    };
+}
+
+function renderLinearIntro(container, caseData, caseId) {
+    const label = caseId === "case3" ? "Caso 3 · Visa T + RFE" : "Caso Extra · Abogado y Bar";
+    container.innerHTML = `
+        <div class="card">
+            <div class="badge case">📋 ${label}</div>
+            <div class="card-title">${caseData.title}</div>
+            <div class="scenario-box"><span class="scenario-label">Escenario</span>${caseData.scenario}</div>
+            <p style="font-size:0.84rem;color:var(--text-muted);">Una vez que inicies las preguntas, deberás responderlas en orden. Lee el escenario con atención antes de continuar.</p>
+            <div class="nav-row">
+                <button class="btn btn-secondary" id="backMenuI">↩ Menú principal</button>
+                <button class="btn btn-primary" id="startQsBtn">📝 Iniciar preguntas →</button>
+            </div>
+        </div>
+    `;
+    document.getElementById("backMenuI").onclick = () => { currentView = "menu"; render(); };
+    document.getElementById("startQsBtn").onclick = () => {
+        if (caseId === "case3") { linear3Index = 0; currentView = "case3_linear_q"; }
+        else { linear4Index = 0; currentView = "case4_linear_q"; }
+        render();
+    };
+}
+
+function renderLinearQuestion(container, questions, idx, caseId) {
+    if (idx >= questions.length) {
+        if (caseId === "case3") completedCases.case3 = true;
+        else completedCases.case4 = true;
+        saveUserSession();
+        currentView = "menu";
+        render();
+        return;
+    }
+    const q = questions[idx];
+    const label = caseId === "case3" ? "Caso 3 · Visa T + RFE" : "Caso Extra · Abogado y Bar";
+    container.innerHTML = `
+        <div class="card">
+            <div class="badge case">📋 ${label} · Pregunta ${idx+1} de ${questions.length}</div>
+            <div class="progress-wrap">
+                <div class="progress-track"><div class="progress-fill" style="width:${((idx)/questions.length)*100}%"></div></div>
+                <div class="progress-labels"><span>Pregunta ${idx+1} de ${questions.length}</span><span>${idx} respondidas</span></div>
+            </div>
+            <div class="card-title">${q.text}</div>
+            <p style="font-size:0.82rem;color:var(--text-muted);margin:0.5rem 0 0.25rem;font-weight:600;">Selecciona la mejor respuesta:</p>
+            <div class="options-list" id="linearOptions"></div>
+            <div class="feedback-panel" id="linearFeedback"></div>
+            <div class="nav-row">
+                <button class="btn btn-secondary" id="backLinearMenu">↩ Menú</button>
+                <button class="btn btn-primary" id="nextLinearBtn" disabled>Siguiente →</button>
+            </div>
+        </div>
+    `;
+    const optsDiv = document.getElementById("linearOptions");
+    q.options.forEach(opt => {
+        const btn = document.createElement("button");
+        btn.className = "option-btn";
+        btn.innerText = opt.text;
+        btn.onclick = () => {
+            document.querySelectorAll(".option-btn").forEach(b => { b.classList.remove("selected"); b.disabled = false; });
+            btn.classList.add("selected");
+            document.querySelectorAll(".option-btn").forEach(b => b.disabled = true);
+            const fb = document.getElementById("linearFeedback");
+            const isOk = opt.score === 1;
+            fb.className = `feedback-panel show ${isOk ? 'correct' : 'incorrect'}`;
+            fb.innerHTML = `<span class="feedback-label">${isOk ? '✓ Correcto' : '✗ Incorrecto'} · Retroalimentación</span>${opt.feedback}`;
+            linearTemp = { score: opt.score, text: opt.text, feedback: opt.feedback };
+            document.getElementById("nextLinearBtn").disabled = false;
+        };
+        optsDiv.appendChild(btn);
+    });
+    document.getElementById("backLinearMenu").onclick = () => { currentView = "menu"; render(); };
+    document.getElementById("nextLinearBtn").onclick = () => {
+        if (!linearTemp) return;
+        registerAnswer(caseId === "case3" ? "Caso 3" : "Caso 4", q.text, linearTemp.text, linearTemp.score===1, linearTemp.feedback, linearTemp.score);
+        totalScore += linearTemp.score;
+        answeredCount++;
+        linearTemp = null;
+        if (caseId === "case3") linear3Index++;
+        else linear4Index++;
+        render();
+    };
+}
+
+function renderResults(container) {
+    const pct = (totalScore / MAX_SCORE) * 100;
+    const passed = pct >= 85;
+    let advice = "";
+    if (pct >= 90) advice = "Dominas el ciclo Identificar-Prevenir-Manejar. Tus decisiones protegen tanto al cliente como a la firma. Mantén este nivel en casos reales y comparte tu enfoque con el equipo.";
+    else if (pct >= 85) advice = "Buen desempeño general. Revisa los casos de árbol (Casos 1 y 2) para fortalecer el manejo de quejas y el escalamiento temprano. Practica especialmente la identificación de perfiles de riesgo.";
+    else advice = "Hay áreas importantes que reforzar: identificación de red flags, protocolo de defensa ante quejas al Bar, y comunicación proactiva con clientes. Te recomendamos repasar el flujo PCM-002 y los mensajes estándar del CRM.";
+
+    let recordsHtml = answerRecords.map((rec, i) => {
+        const ok = rec.correct;
+        return `<div class="answer-record">
+            <div class="ar-case">${rec.caseName}</div>
+            <div class="ar-q">${rec.questionText.substring(0,100)}${rec.questionText.length>100?'…':''}</div>
+            <div class="ar-chosen">Respuesta: <em>${rec.selectedOption.substring(0,80)}${rec.selectedOption.length>80?'…':''}</em></div>
+            <div class="${ok ? 'ar-correct' : 'ar-incorrect'}">${ok ? '✓ Correcto' : '✗ Incorrecto'}</div>
+            <div class="ar-feedback">${rec.feedback}</div>
+        </div>`;
+    }).join('');
+
+    const restartBtn = isAdmin
+        ? `<button class="btn btn-danger" id="restartBtn" style="margin-top:1rem;">🔄 Nuevo intento (Admin)</button>`
+        : '';
+
+    container.innerHTML = `
+        <div class="card">
+            <div class="badge">📊 Resultado Final</div>
+            <div class="result-hero">
+                <div class="result-score">${totalScore}<span style="font-size:2rem;color:var(--text-muted)">/${MAX_SCORE}</span></div>
+                <div class="result-pct">${pct.toFixed(1)}%</div>
+                <div class="result-verdict ${passed ? 'verdict-pass' : 'verdict-fail'}">${passed ? '✅ Aprobado' : '⚠️ No aprobado'}</div>
+            </div>
+            <div class="feedback-summary">${advice}</div>
+            <hr class="divider">
+            <details>
+                <summary>Ver resumen detallado de respuestas (${answerRecords.length} preguntas)</summary>
+                <div style="margin-top:1rem;">${recordsHtml}</div>
+            </details>
+            <div class="nav-row" style="justify-content:center;margin-top:1.5rem;">
+                ${restartBtn}
+            </div>
+        </div>
+    `;
+    document.getElementById("restartBtn")?.addEventListener("click", () => {
+        completedCases = { case1:false, case2:false, case3:false, case4:false };
+        totalScore = 0; answeredCount = 0; answerRecords = [];
+        tree1Stage = "1"; tree2Stage = "1"; linear3Index = 0; linear4Index = 0;
+        saveUserSession();
+        currentView = "menu";
+        render();
+    });
+}
+
+function renderAdmin(container) {
+    const all = loadAllRecords();
+    const entries = Object.values(all).filter(e => normalizeKey(e.name || "") !== "admin");
+
+    let tableRows = "";
+    if (entries.length === 0) {
+        tableRows = `<tr><td colspan="5"><div class="empty-state">Aún no hay participantes registrados.</div></td></tr>`;
+    } else {
+        entries.forEach((e, i) => {
+            const pct = e.totalScore ? ((e.totalScore / MAX_SCORE)*100).toFixed(1) : "0.0";
+            const passed = parseFloat(pct) >= 85;
+            const dt = e.timestamp ? new Date(e.timestamp).toLocaleString('es-MX',{dateStyle:'short',timeStyle:'short'}) : "—";
+            const detailId = `detail_${i}`;
+            const detailRows = (e.answerRecords||[]).map(r =>
+                `<div class="detail-item">
+                    <div class="di-q">[${r.caseName}] ${r.questionText.substring(0,60)}…</div>
+                    <div class="di-ans">${r.selectedOption.substring(0,40)}…</div>
+                    <span class="detail-badge ${r.correct?'ok':'err'}">${r.correct?'✓':'✗'}</span>
+                </div>`
+            ).join('');
+            tableRows += `
+                <tr>
+                    <td><strong>${e.name || '—'}</strong></td>
+                    <td>${dt}</td>
+                    <td><strong>${e.totalScore||0}/${MAX_SCORE}</strong></td>
+                    <td><span class="pass-chip ${passed?'pass':'fail'}">${pct}% · ${passed?'Aprobado':'No aprobado'}</span></td>
+                    <td>
+                        <button class="btn btn-secondary" style="font-size:0.75rem;padding:0.35rem 0.8rem;" onclick="toggleDetail('${detailId}')">
+                            Detalle
+                        </button>
+                    </td>
+                </tr>
+                <tr class="admin-detail-row" id="${detailId}" style="display:none;">
+                    <td colspan="5">
+                        <div style="padding:0.5rem 0;">
+                            ${detailRows || '<div style="font-size:0.8rem;color:var(--text-muted)">Sin respuestas registradas.</div>'}
+                        </div>
+                    </td>
+                </tr>`;
+        });
+    }
+
+    container.innerHTML = `
+        <div class="admin-header">
+            <div>
+                <div class="ah-title">🔒 Panel de Administrador</div>
+                <div class="ah-sub">${entries.length} participante(s) registrado(s)</div>
+            </div>
+            <button class="btn btn-secondary" id="backToMenuAdmin" style="color:#fff;border-color:rgba(255,255,255,0.3);">← Volver al menú</button>
+        </div>
+        <div class="card" style="padding:0;overflow:hidden;">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Fecha y hora</th>
+                        <th>Puntaje</th>
+                        <th>Resultado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>${tableRows}</tbody>
+            </table>
+        </div>
+    `;
+    document.getElementById("backToMenuAdmin").onclick = () => { currentView = "menu"; render(); };
+}
+
+window.toggleDetail = function(id) {
+    const row = document.getElementById(id);
+    if (row) row.style.display = row.style.display === "none" ? "table-row" : "none";
+};
+
+// ═══════════════════════════════════════════════════
+// ADMIN MODAL
+// ═══════════════════════════════════════════════════
+function openAdminModal() {
+    document.getElementById("adminModal").classList.add("open");
+    document.getElementById("adminPassInput").value = "";
+    document.getElementById("adminPassError").style.display = "none";
+    setTimeout(() => document.getElementById("adminPassInput").focus(), 100);
+}
+document.getElementById("adminModalCancel").onclick = () => {
+    document.getElementById("adminModal").classList.remove("open");
+};
+document.getElementById("adminModalConfirm").onclick = () => {
+    const val = document.getElementById("adminPassInput").value;
+    if (val === ADMIN_PASS) {
+        document.getElementById("adminModal").classList.remove("open");
+        isAdmin = true;
+        userName = "Admin";
+        currentView = "admin";
+        render();
+    } else {
+        document.getElementById("adminPassError").style.display = "block";
+        document.getElementById("adminPassInput").select();
+    }
+};
+document.getElementById("adminPassInput").onkeydown = (e) => {
+    if (e.key === "Enter") document.getElementById("adminModalConfirm").click();
+};
+document.getElementById("adminModal").onclick = (e) => {
+    if (e.target === document.getElementById("adminModal")) document.getElementById("adminModal").classList.remove("open");
+};
+
+// ═══════════════════════════════════════════════════
+// SCORM 1.2 INTEGRATION
+// ═══════════════════════════════════════════════════
+const SCORM = (() => {
+    let API = null;
+    let initialized = false;
+
+    // Walk up the window tree to find the SCORM 1.2 API object
+    function findAPI(win) {
+        let attempts = 0;
+        try {
+            while (win.API == null && win.parent != null && win.parent != win) {
+                attempts++;
+                if (attempts > 500) return null;
+                win = win.parent;
+            }
+            return win.API || null;
+        } catch (e) {
+            // Cross-origin frame (e.g. preview sandbox) - no SCORM API available
+            return null;
+        }
+    }
+
+    function getAPI() {
+        if (API) return API;
+        try {
+            API = findAPI(window);
+            if (!API && window.opener) API = findAPI(window.opener);
+        } catch (e) {
+            API = null;
+        }
+        return API;
+    }
+
+    function init() {
+        const api = getAPI();
+        if (!api) return false;
+        const result = api.LMSInitialize("");
+        initialized = (result === "true" || result === true);
+        if (initialized) {
+            api.LMSSetValue("cmi.core.lesson_status", "incomplete");
+            api.LMSSetValue("cmi.core.score.min", "0");
+            api.LMSSetValue("cmi.core.score.max", String(MAX_SCORE));
+            api.LMSCommit("");
+        }
+        return initialized;
+    }
+
+    function setScore(raw, passed) {
+        const api = getAPI();
+        if (!api || !initialized) return;
+        const scaled = Math.round((raw / MAX_SCORE) * 100);
+        api.LMSSetValue("cmi.core.score.raw", String(raw));
+        api.LMSSetValue("cmi.core.score.scaled", String(scaled / 100));
+        api.LMSSetValue("cmi.core.lesson_status", passed ? "passed" : "failed");
+        api.LMSCommit("");
+    }
+
+    function suspend() {
+        const api = getAPI();
+        if (!api || !initialized) return;
+        api.LMSSetValue("cmi.core.exit", "suspend");
+        api.LMSCommit("");
+        api.LMSFinish("");
+    }
+
+    function finish(raw, passed) {
+        const api = getAPI();
+        if (!api || !initialized) return;
+        setScore(raw, passed);
+        api.LMSSetValue("cmi.core.exit", "");
+        api.LMSCommit("");
+        api.LMSFinish("");
+    }
+
+    return { init, setScore, finish, suspend };
+})();
+
+// Initialize SCORM on load
+SCORM.init();
+
+// Report score when results are shown
+const _origRenderResults = renderResults;
+function renderResults(container) {
+    _origRenderResults(container);
+    const pct = (totalScore / MAX_SCORE) * 100;
+    SCORM.finish(totalScore, pct >= 85);
+}
+
+// Suspend on unload if not yet finished
+window.addEventListener("beforeunload", () => {
+    SCORM.suspend();
+});
+
+// ═══════════════════════════════════════════════════
+// BOOT
+// ═══════════════════════════════════════════════════
+render();
+</script>
+</body>
+</html>
