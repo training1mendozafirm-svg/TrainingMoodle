@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Guía de Compliance — Prevención de Quejas</title>
+<style>
+  :root{
+    --navy:#0D2B47; --blue:#1B3A6B; --mid:#2E6DA4; --red:#8B1A1A;
+    --amber:#B8860B; --green:#1E6B3A;
+  }
+  *{box-sizing:border-box;}
+  body{font-family:Arial, sans-serif; background:#F0F4FA; margin:0; min-height:100vh; color:#222;}
+  .header{background:linear-gradient(90deg, var(--navy) 0%, var(--blue) 60%, var(--mid) 100%); padding:18px 24px 14px;}
+  .header .eyebrow{font-size:11px; color:rgba(255,255,255,0.6); letter-spacing:.1em; text-transform:uppercase; margin-bottom:3px;}
+  .header .title{color:#fff; font-weight:800; font-size:19px;}
+  .header .sub{color:rgba(255,255,255,0.65); font-size:12.5px; margin-top:4px;}
+
+  .tabs{display:flex; background:#E4ECF7; border-bottom:2px solid #C5D5EA; padding:0 24px; overflow-x:auto;}
+  .tab-btn{padding:11px 16px; border:none; border-bottom:3px solid transparent; background:transparent; color:#666; font-weight:500; font-size:13px; cursor:pointer; white-space:nowrap; font-family:inherit;}
+  .tab-btn.active{border-bottom:3px solid var(--blue); color:var(--blue); font-weight:800;}
+
+  .content{padding:20px 24px;}
+  .footer{text-align:center; color:#8899AA; font-size:11px; padding:8px 0 20px;}
+
+  .info-box{border-radius:6px; padding:10px 14px; margin-bottom:16px; font-size:13px; line-height:1.5;}
+  .info-amber{background:#FFF8E1; border:1px solid #FFD54F; color:#5D4037;}
+  .info-blue{background:#E8F4FD; border:1px solid #AED6F1; color:#1A5276;}
+
+  .subtab-row{display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;}
+  .subtab-btn{padding:6px 14px; border-radius:5px; border:2px solid #ddd; background:#fff; color:#555; font-weight:700; font-size:12px; cursor:pointer; font-family:inherit;}
+  .subtab-btn.active{color:#fff;}
+
+  .cat-header{color:#fff; padding:8px 14px; border-radius:6px 6px 0 0; font-weight:700; font-size:13px;}
+  .item-row{border:1px solid #ddd; border-top:none; background:#fff; display:flex; align-items:center; padding:10px 14px; cursor:pointer; gap:8px;}
+  .item-row.open{background:#FFFDF5;}
+  .item-detail{padding:0 14px 12px 14px; font-size:13px; color:#444; line-height:1.7; border:1px solid #ddd; border-top:1px dashed #eee; border-top-color:#eee; background:#FFFDF5; margin-top:-1px;}
+  .item-detail{display:none;}
+  .item-detail.show{display:block;}
+
+  .badge{border-radius:4px; padding:2px 8px; font-size:11px; font-weight:700; margin-right:6px; white-space:nowrap; color:#fff;}
+  .pts-badge{background:#F0F4FA; border:1px solid #BDD3EE; border-radius:4px; padding:1px 7px; font-size:11px; color:var(--blue); font-weight:700; margin-right:6px;}
+  .señal-text{font-size:13px; color:#222; flex:1;}
+  .chevron{color:#aaa; font-size:16px;}
+
+  .cat-block{margin-bottom:20px;}
+
+  .score-block{margin-bottom:10px; border:1px solid #ddd; border-radius:6px; overflow:hidden;}
+  .score-block-head{display:flex; justify-content:space-between; align-items:center; background:#F0F4FA; padding:7px 12px;}
+  .score-block-head span.name{font-weight:700; font-size:13px; color:var(--blue);}
+  .score-block-head span.weight{background:var(--blue); color:#fff; border-radius:4px; padding:2px 10px; font-size:12px; font-weight:700;}
+  .score-block-body{padding:8px 12px;}
+  .score-item-line{font-size:12.5px; color:#444; padding:3px 0; border-bottom:1px dashed #eee;}
+  .score-item-line:last-child{border-bottom:none;}
+
+  .monitor-grid{padding:8px 12px; display:grid; grid-template-columns:1fr 1fr; gap:4px;}
+  .monitor-item{display:flex; justify-content:space-between; align-items:center; font-size:12.5px; color:#444; padding:4px 8px; border-radius:4px; border:1px solid #eee;}
+  .monitor-item .pts{font-weight:800; font-size:13px;}
+
+  .range-row{display:grid; grid-template-columns:140px 130px 1fr; gap:10px; align-items:center; padding:10px 12px; border-radius:4px; margin-bottom:6px; border:1px solid #eee;}
+  .range-row .nivel{font-weight:700; font-size:13px;}
+  .range-row .rango{color:var(--mid); font-weight:600; font-size:12px;}
+  .range-row .accion{font-size:12.5px; color:#333;}
+
+  .redflag-grid{display:grid; grid-template-columns:1fr 1fr; gap:6px;}
+  .redflag-item{display:flex; align-items:flex-start; gap:6px; padding:7px 10px; background:#FFF5F5; border:1px solid #F5C6C6; border-radius:5px; font-size:12.5px; color:#444;}
+
+  .prev-banner{border-radius:6px; padding:8px 14px; margin-bottom:16px; font-size:13px; font-weight:600; border:2px solid;}
+  .prev-block{margin-bottom:16px; border:1px solid #ddd; border-radius:6px; overflow:hidden;}
+  .prev-block-head{color:#fff; padding:9px 14px; font-weight:700; font-size:13px;}
+  .prev-block-body{padding:10px 14px;}
+  .prev-action{display:flex; align-items:flex-start; gap:8px; padding:6px 0; border-bottom:1px dashed #eee; font-size:13px; color:#333; line-height:1.6;}
+  .prev-action:last-child{border-bottom:none;}
+  .prev-check{font-weight:700; flex-shrink:0; font-size:15px; margin-top:1px;}
+
+  .profile-btn{padding:7px 14px; border-radius:5px; border:2px solid #ddd; background:#fff; color:#555; font-weight:700; font-size:12px; cursor:pointer; font-family:inherit;}
+  .profile-btn.active{color:#fff;}
+  .profile-card{border-radius:8px; overflow:hidden; border:2px solid;}
+  .profile-head{color:#fff; padding:13px 16px;}
+  .profile-head .name{font-size:17px; font-weight:800;}
+  .profile-head .desc{font-size:13px; opacity:.88; margin-top:5px; line-height:1.5;}
+  .profile-body{padding:16px; background:#fff;}
+  .prog-row{display:flex; flex-wrap:wrap; gap:6px; align-items:center;}
+  .prog-chip{border-radius:4px; padding:5px 10px; font-size:12.5px; color:#333; border:1px solid;}
+  .two-col{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:16px;}
+  .ind-line{display:flex; gap:7px; padding:5px 0; border-bottom:1px dashed #eee; font-size:12.5px; color:#333; line-height:1.6;}
+  .ind-line:last-child{border-bottom:none;}
+  .ind-dot{font-weight:700; flex-shrink:0; font-size:14px;}
+  .proto-line{display:flex; gap:8px; padding:5px 0; border-bottom:1px dashed #eee; font-size:12.5px; color:#333; line-height:1.6;}
+  .proto-line:last-child{border-bottom:none;}
+  .proto-num{background:var(--green); color:#fff; border-radius:50%; width:20px; height:20px; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:800; flex-shrink:0; margin-top:1px;}
+
+  @media (max-width:640px){
+    .two-col, .monitor-grid, .redflag-grid{grid-template-columns:1fr;}
+    .range-row{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="eyebrow">Mendoza Law Firm · Guía de Compliance</div>
+  <div class="title">Cómo prevenir quejas — Guía práctica para el equipo</div>
+  <div class="sub">Todo lo que necesitas saber para identificar clientes en riesgo y actuar antes de que sea tarde</div>
+</div>
+
+<div class="tabs" id="mainTabs"></div>
+<div class="content" id="content"></div>
+<div class="footer">Mendoza Law Firm · Uso interno · Confidencial</div>
+
+<script>
+const NAVY="#0D2B47", BLUE="#1B3A6B", MID="#2E6DA4", RED="#8B1A1A", AMBER="#B8860B", GREEN="#1E6B3A";
+
+const tabs = [
+  { id: "amenazas", label: "⚠️ Señales de peligro" },
+  { id: "scoring", label: "📊 Cómo medimos el riesgo" },
+  { id: "prevencion", label: "🛡️ Qué podemos hacer" },
+  { id: "deteccion", label: "🔍 Tipos de clientes difíciles" },
+];
+
+const amenazas = [
+  { categoria: "🚨 El cliente ya nos dijo directamente que va a actuar", color: RED, items: [
+    { nivel:"CRÍTICO", puntos:10, señal:"El cliente amenaza con poner una queja formal contra la firma", impacto:"Esto es una alarma máxima. Cuando un cliente dice esto, la mayoría de las veces lo cumple. Hay que avisar de inmediato al área legal y no dejar que el caso siga en manos del staff regular." },
+    { nivel:"CRÍTICO", puntos:10, señal:"El cliente pide el número de licencia de MGM", impacto:"Esto casi siempre significa que ya está buscando cómo presentar una queja. En todos los casos que hemos analizado, pedir ese número fue uno de los últimos pasos antes de la queja." },
+    { nivel:"CRÍTICO", puntos:10, señal:"El cliente pide cancelar su caso", impacto:"Cuando alguien quiere cancelar, casi siempre viene acompañado de una queja o de pedir que le regresen su dinero. Es señal de que ya perdimos su confianza completamente." },
+    { nivel:"ALTO", puntos:9, señal:"El cliente amenaza con dejar una reseña mala, ir a las oficinas o quejarse", impacto:"Ya está en modo de ataque. Si no se atiende bien en este momento, el cliente va a buscar a alguien externo que le confirme que tiene razón — y cuando eso pasa, la queja formal es casi inevitable." },
+  ]},
+  { categoria: "👥 Alguien más se metió en el caso", color: "#7B1C1C", items: [
+    { nivel:"CRÍTICO", puntos:10, señal:"El cliente fue a consultar con otro abogado o firma", impacto:"Ese abogado externo generalmente le va a decir al cliente que tiene razón en estar molesto, y eso es lo que necesita para decidirse a poner la queja. En los tres casos reales que estudiamos, esto fue lo que detonó todo." },
+    { nivel:"CRÍTICO", puntos:10, señal:"Un familiar o conocido está llamando a la firma en nombre del cliente", impacto:"Significa que el cliente ya no quiere hablar con nosotros directamente. También puede meternos en problemas si le damos información a alguien que no tiene permiso de recibirla." },
+    { nivel:"CRÍTICO", puntos:10, señal:"Alguien externo (familiar o abogado) está pidiendo el expediente del cliente", impacto:"Cuando un abogado externo pide el expediente, es porque está preparando algo en contra de la firma. Es una señal de que ya hay alguien trabajando contra nosotros." },
+  ]},
+  { categoria: "💸 El cliente está molesto por el dinero", color: AMBER, items: [
+    { nivel:"CRÍTICO", puntos:10, señal:"El cliente pide que le regresen su dinero", impacto:"Si no se maneja bien, esto puede escalar a una disputa con el banco (chargeback) donde el banco le devuelve el dinero directamente y encima nos cobra una penalización. Y todo eso puede usarse como evidencia de que el cliente estaba insatisfecho." },
+    { nivel:"ALTO", puntos:8, señal:"El cliente se queja de que le cobraron cosas que no esperaba", impacto:"Si no tenemos un estado de cuenta claro que muestre qué se cobró y por qué, es muy difícil defendernos cuando el cliente dice que le cobramos de más." },
+    { nivel:"ALTO", puntos:8, señal:"El cliente dice que nunca le mandamos recibos de sus pagos", impacto:"Sin recibos, no podemos demostrar que el cliente pagó y que nosotros cumplimos con el servicio. Es como si no tuviéramos prueba de que hicimos nuestro trabajo." },
+  ]},
+  { categoria: "😤 El cliente ya no confía en nosotros", color: MID, items: [
+    { nivel:"CRÍTICO", puntos:10, señal:"El cliente está llamando directamente a USCIS para preguntar por su caso", impacto:"Cuando un cliente empieza a buscar información por su cuenta en USCIS, es porque ya no cree en lo que nosotros le decimos. Está buscando pruebas para confrontarnos o para armar su queja." },
+    { nivel:"ALTO", puntos:9, señal:"El cliente dice que solo quiere hablar con MGM y con nadie más", impacto:"Ya no confía en el equipo. Siente que nadie más puede darle respuestas reales. Si no se atiende rápido, esto escala." },
+    { nivel:"ALTO", puntos:9, señal:"El cliente dice que le prometieron algo y no se cumplió (fechas, resultados, representación)", impacto:"Si alguien del equipo le prometió algo por escrito, estamos en un problema serio. Si fue verbal y no quedó documentado, el cliente puede decir lo que quiera y nosotros no tenemos cómo contradecirlo." },
+    { nivel:"ALTO", puntos:9, señal:"El cliente pide que le manden todo su expediente", impacto:"En todos los casos que analizamos, pedir el expediente fue uno de los pasos antes de contratar a otro abogado. El cliente está juntando todo para irse o para usarlo en nuestra contra." },
+    { nivel:"ALTO", puntos:8, señal:"El cliente dice que escuchó cosas malas sobre la firma (en redes, con otra persona)", impacto:"Cuando alguien de afuera le confirma al cliente que sus dudas tienen sentido, el cliente deja de dudar y actúa. La influencia externa es como echarle gasolina al fuego." },
+    { nivel:"ALTO", puntos:8, señal:"El cliente dice que le robaron o lo engañaron con un abogado anterior", impacto:"Este cliente ya viene con la guardia alta. Para él, cualquier cosa que no entienda o que salga mal va a confirmar que nosotros también somos un fraude. Hay que ser mucho más cuidadosos con él." },
+    { nivel:"CRÍTICO", puntos:10, señal:"Más de 6 meses sin que la firma le haya escrito o llamado al cliente por iniciativa propia", impacto:"Este es el problema número uno en nuestros casos de queja. El cliente siente que lo abandonamos. Aunque hayamos estado trabajando en su caso, si no le avisamos, para él es como si no hubiéramos hecho nada." },
+  ]},
+  { categoria: "🏚️ Problemas que tenemos nosotros como firma", color: "#4A235A", items: [
+    { nivel:"ESTRUCTURAL", puntos:null, señal:"Casos que llevan más de 180 días sin que el cliente vea avances claros", impacto:"Entre más tiempo pase sin que el cliente entienda qué está pasando, más crece la idea de que lo abandonamos. Estos casos son los que más quejas generan." },
+    { nivel:"ESTRUCTURAL", puntos:null, señal:"No tenemos notas ni registros que demuestren que hicimos el trabajo", impacto:"Aunque hayamos trabajado mucho en el caso, si no lo tenemos escrito en TramCase, en un correo o en cualquier lado, es como si no hubiera pasado. No podemos defendernos." },
+    { nivel:"ESTRUCTURAL", puntos:null, señal:"El cliente nunca firmó ni confirmó que entendió los tiempos y el proceso", impacto:"Si el cliente dice 'nadie me explicó que podía tardar tanto' o 'nadie me avisó que podían negarme', y no tenemos su firma o confirmación de que sí se le explicó, no podemos refutarlo." },
+    { nivel:"ESTRUCTURAL", puntos:null, señal:"Solo le contestamos al cliente cuando él llama — nunca lo contactamos primero", impacto:"Este patrón apareció en los tres casos de queja que estudiamos. Cuando la firma solo responde pero nunca toma la iniciativa, el cliente siente que no le importamos. Y en algún momento deja de llamar... y actúa." },
+  ]},
+];
+
+const scoring = {
+  ia: [
+    { cat:"Amenazas directas (pedir barra, amenazar con queja, cancelar)", peso:"35%", items:["Pide número de licencia de MGM — 25%","Hace amenazas contra la firma — 25%","Amenaza con queja formal — 25%","Pide cancelar su caso — 25%"] },
+    { cat:"Alguien externo se metió en el caso", peso:"20%", items:["Fue a consultar con otro abogado — 33%","Un familiar llama por él sin permiso escrito — 33%","Alguien externo pide su expediente — 33%"] },
+    { cat:"El cliente tiene preguntas que nadie le resuelve", peso:"15%", items:["Se queja de que sus dudas no se resuelven — 14%","Llama por chat, teléfono y correo el mismo día — 14%","Pide hablar con un abogado — 14%","Pide hablar con MGM — 14%","Ha tenido callbacks — 14%","Llamó a USCIS directamente — 14%","Solo quiere hablar con MGM — 14%"] },
+    { cat:"Problemas con el dinero", peso:"10%", items:["Pide que le regresen su dinero — 33%","Se queja de cobros extra — 33%","Dice que no tiene recibos de pago — 33%"] },
+    { cat:"Se queja de que todo tarda mucho", peso:"4%", items:["Expresa molestia por los tiempos — 33%","El caso lleva más de un año abierto — 33%","Más de 6 meses sin que la firma le escriba — 33%"] },
+    { cat:"Tuvo problemas con migración", peso:"5%", items:["Lo detuvieron antes de abrir el caso — 50%","Lo detuvieron mientras tenía el caso activo — 50%"] },
+    { cat:"El caso cambió o le incumplieron algo", peso:"5%", items:["Le cambiaron el tipo de visa — 50%","Se queja de que no cumplieron lo que le prometieron — 50%"] },
+    { cat:"Problemas con documentos", peso:"4%", items:["Pide su expediente completo — 33%","Dice que no tiene recibos de USCIS — 33%","Le mandamos documentos equivocados — 33%"] },
+    { cat:"Estado emocional", peso:"2%", items:["Lo estafó un abogado antes — 33%","Tiene miedo de las autoridades migratorias — 33%","Escuchó cosas malas sobre la firma — 33%"] },
+  ],
+  monitor: [
+    { cat:"Dinero", items:[["Pide reembolso",10],["Cobra extra inesperado",8],["Sin recibos de pago",8]] },
+    { cat:"Tiempos", items:[["Molestia por tiempos",8],["Caso > 1 año",8],[">6 meses sin contacto",10]] },
+    { cat:"Preguntas sin respuesta", items:[["Dudas sin resolver",7],["Llama por varios canales el mismo día",8],["Pide hablar con abogado",4],["Pide hablar con MGM",7],["Ha tenido callbacks",7],["Llamó a USCIS",10],["Solo quiere a MGM",9]] },
+    { cat:"Documentos", items:[["Pide su expediente",9],["Sin recibos USCIS",7],["Docs equivocados",7]] },
+    { cat:"Alguien externo se metió", items:[["Consultó otro abogado",10],["Familiar llama por él",10],["Externo pide expediente",10]] },
+    { cat:"Amenazas", items:[["Pide número de licencia MGM",10],["Amenazas a la firma",9],["Amenaza queja formal",10],["Pide cancelar",10]] },
+    { cat:"Cambios en el caso", items:[["Le cambiaron el visado",4],["Promesas no cumplidas",9]] },
+    { cat:"Emocional", items:[["Abogado anterior lo estafó",8],["Miedo a migración",7],["Escuchó cosas malas de la firma",8]] },
+  ],
+  rangos: [
+    { nivel:"🟢 Bajo riesgo", rango:"Menos de 50 puntos", accion:"Todo bien por ahora. Seguimiento normal." },
+    { nivel:"🟡 Riesgo medio", rango:"50 a 100 puntos", accion:"Hay que estar más atentos. Documentar todo bien y darle más seguimiento." },
+    { nivel:"🔴 Riesgo alto", rango:"Más de 100 puntos", accion:"Caso urgente. Necesita atención de un especialista y comunicación directa con abogado." },
+    { nivel:"⚫ Riesgo crítico", rango:"Tiene al menos una red flag (sin importar el puntaje)", accion:"Acción inmediata. Avisa a Compliance y Legal hoy mismo." },
+  ],
+  redflags: [
+    "Pidió que le regresen su dinero","Se quejó de que todo tarda mucho","Más de 6 meses sin que la firma lo contacte primero",
+    "Llamó por teléfono, chat y correo el mismo día","Llamó directamente a USCIS para preguntar por su caso",
+    "Solo quiere hablar con MGM y rechaza a todos los demás","Pidió que le mandemos su expediente completo",
+    "Nos dijo que fue a consultar con otro abogado","Alguien externo pidió su expediente","Pidió el número de licencia de MGM",
+    "Amenazó con poner una queja formal","Pidió cancelar su caso",
+  ]
+};
+
+const prevencion = {
+  corto: [
+    { area:"📋 Asegúrate de que el cliente entendió todo desde el principio", acciones:[
+      "Actualiza el contrato para que diga claramente que los tiempos los controla USCIS, no nosotros — y que no hay garantías",
+      "Todos los casos nuevos deben tener un Consentimiento Informado firmado y grabado. Sin excepción.",
+      "Si el caso tiene historial criminal, riesgo de RFE o puede cambiar por las leyes, el cliente debe firmar un consentimiento específico para eso",
+      "Después de la Welcome Call, manda un mensaje confirmando que el cliente entendió los siguientes pasos — y guarda ese mensaje",
+    ]},
+    { area:"📞 No esperes a que el cliente llame — llámale tú primero", acciones:[
+      "Define cuántos días máximo pueden pasar sin que la firma contacte al cliente (dependiendo de la etapa del caso)",
+      "Hay momentos donde el contacto es obligatorio: cuando llega el recibo, cuando se manda a USCIS, cuando llega un RFE, cuando hay un cambio de abogado, cuando pasan 180 días sin movimiento",
+      "Si pasan más días de los permitidos sin contacto, el sistema debe lanzar una alerta automática",
+      "Cuando el cliente pregunte por los tiempos, el equipo debe saber decir: 'USCIS decide cuándo, no nosotros — el tiempo que tarda no significa que algo esté mal'",
+    ]},
+    { area:"👁️ Empieza a identificar qué casos pueden ser un problema", acciones:[
+      "Usa el checklist de PCM-002 para revisar los casos antes de que se envíen a USCIS",
+      "Capacita a los monitors para que sepan aplicar el scoring y entiendan qué buscar",
+      "Cuando detectes que un cliente tiene un perfil de riesgo, ponle una etiqueta en el sistema (Silencioso / Ruidoso / Exigente)",
+      "Guarda esa evaluación en el expediente para que quede registrado",
+    ]},
+    { area:"📝 Escribe todo — siempre", acciones:[
+      "Cada vez que hablas con un cliente, deja una nota en TramCase: qué se dijo, cuándo, por qué canal, y qué va a pasar después",
+      "Si tuviste un callback importante, manda un mensajito de confirmación al cliente después y guárdalo",
+      "Si no hubo contacto en el período que debía haberlo, escribe por qué — no lo dejes en blanco",
+      "Cualquier cosa que le prometas al cliente, mándala también por escrito ese mismo día",
+    ]},
+  ],
+  mediano: [
+    { area:"⚙️ Arma el sistema completo de monitoreo", acciones:[
+      "La IA debe revisar casos de manera sistemática cada semana — la meta es revisar 100 casos por semana",
+      "Los casos que la IA marca como riesgo alto o crítico los revisa también un monitor humano — doble chequeo",
+      "Cuando un caso se marca como Alto Riesgo, debe haber un protocolo claro de intervención (PCM-003) que todos sepan seguir",
+      "Todos los resultados de ese monitoreo deben quedar registrados en el sistema (SIS)",
+    ]},
+    { area:"⏳ Cuida los casos que llevan mucho tiempo sin moverse", acciones:[
+      "Cualquier caso que lleve más de 180 días sin avances visibles debe recibir una alerta automática",
+      "Esos clientes deben recibir un mensaje de actualización dos veces al mes, aunque no haya novedades",
+      "Prepara un documento sencillo que explique qué significan los estatus de USCIS — mándalo a los clientes que están en etapa de espera",
+      "Cada vez que mandes ese mensaje de actualización, déjalo registrado en el expediente",
+    ]},
+    { area:"💰 Orden con el dinero", acciones:[
+      "Cada cliente debe tener un estado de cuenta claro: qué pagó, cuándo, para qué fue ese pago y cuánto le falta",
+      "Manda el recibo automáticamente cada vez que el cliente pague — no esperes a que lo pida",
+      "Si hablas con un cliente sobre un cobro extra o un cambio de precio, deja eso por escrito en TramCase",
+      "Cuando un cliente pida que le regresen su dinero, antes de responder cualquier cosa, primero revisa el expediente como si fuera un caso de riesgo",
+    ]},
+    { area:"🎓 Entrena al equipo para reconocer clientes difíciles", acciones:[
+      "Todos los que tienen contacto con clientes deben saber distinguir los tres tipos de cliente problemático: el silencioso, el ruidoso y el exigente",
+      "Deja claro qué puede decir el staff y qué tiene que decir un abogado — no todo es para el mismo nivel",
+      "Practica cómo contestar cuando un cliente está molesto: sin hacer promesas, sin inventar fechas, sin decir cosas que después no se puedan cumplir",
+      "Cuando un monitor detecta una señal de alerta, tiene máximo 48 horas para avisarle al especialista",
+    ]},
+  ],
+  largo: [
+    { area:"📊 Revisa si el sistema está funcionando", acciones:[
+      "Haz auditorías periódicas que midan: cuántos clientes están en riesgo, cuántos casos tienen el consentimiento completo, cuántos están recibiendo contacto en tiempo, qué tan rápido se resuelven las señales de alerta",
+      "Crea un semáforo visual que le muestre a los directivos cómo están los riesgos cada semana",
+      "Cada tres meses, revisa si los criterios del checklist siguen siendo útiles — actualízalos si hay casos nuevos que muestren patrones diferentes",
+      "Define metas concretas para el equipo: cuántas revisiones por semana, cuántos ciclos de seguimiento, etc.",
+    ]},
+    { area:"🏛️ Deja todo por escrito como política oficial", acciones:[
+      "Formaliza quién hace qué: quién se encarga de comunicación y expectativas, quién se encarga de intervención cuando ya hay un problema, y quién supervisa todo",
+      "Revisa los criterios del scoring periódicamente usando los datos reales — si el sistema predijo bien o mal, ajústalo",
+      "Para los casos de T Visa específicamente, crea una lista de verificación propia: qué evidencia mínima se necesita, cuándo pedir el FOIA, cómo revisar el caso antes de mandarlo",
+      "Documenta formalmente el análisis de los tres casos reales (Víctor, María, Yeny) como referencia institucional para todo el equipo",
+    ]},
+    { area:"🌐 Cuida la imagen de la firma", acciones:[
+      "Monitorea activamente las reseñas en Google y otros sitios — cuando aparezca una mala reseña, respóndela de manera profesional en menos de 48 horas",
+      "Define quién puede hablar en nombre de la firma cuando hay una queja activa — no todo el mundo puede responder",
+      "Después de cada queja formal, haz una reunión interna para entender qué falló y actualiza el sistema para que no se repita",
+      "Crea materiales sencillos para los clientes que expliquen cómo funciona USCIS, para que no dependan 100% de que nosotros les expliquemos todo cada vez",
+    ]},
+  ]
+};
+
+const deteccion = [
+  { perfil:"El Silencioso Peligroso", color:"#4A0E0E", icono:"🔇",
+    descripcion:"Este cliente casi no llama, casi no se queja... y cuando actúa, ya es demasiado tarde. Es el más peligroso porque no da señales claras — y el equipo lo confunde con un cliente tranquilo.",
+    progression:["Pasan semanas o meses sin que llame","→ Deja de responder después de una llamada incómoda","→ En silencio, va a consultar con otro abogado o familiar","→ Sin avisar a la firma, presenta la queja formal"],
+    indicadores:["Siempre fue poco comunicativo, pero ahora ya no responde nada","Después de una llamada donde le dimos malas noticias, desapareció","Un familiar o conocido empezó a llamar por él","El caso se mandó a USCIS hace más de 90 días y no hemos tenido ningún contacto documentado","Alguien nos dijo que el cliente estuvo revisando su caso directamente en la página de USCIS"],
+    protocolo:["No interpretes el silencio como que está feliz — trátalo como una señal de alerta","Si ves que un cliente dejó de comunicarse después de tensión, pásalo de inmediato del monitor al especialista o abogado","Activa una bandera en el sistema que diga 'cliente en riesgo silencioso' — esa bandera se quita solo cuando el cliente responde","Intenta contactarlo por lo menos 3 veces y por canales distintos (llamada, mensaje, correo) antes de cerrar el ciclo","Si no responde: escribe en TramCase qué intentaste, escala al supervisor y documenta todo"]
+  },
+  { perfil:"El Ruidoso", color:"#7B1C1C", icono:"📢",
+    descripcion:"Este cliente llama mucho, se queja mucho y escala poco a poco. El conflicto se ve venir con tiempo — el problema es cuando no se atiende bien cada señal.",
+    progression:["Llama seguido con las mismas preguntas","→ El tono empieza a cambiar: más frustrado, más cortante","→ Pide hablar con el abogado o con MGM","→ Amenaza abiertamente con queja, cancelación o reseña mala","→ Presenta la queja formal"],
+    indicadores:["Llamó más de 5 veces en una semana preguntando lo mismo","Cuando llama ya se escucha molesto, no como antes","Llamó por teléfono, mandó mensaje por chat y escribió un correo el mismo día","Ya pidió hablar con MGM más de una vez de manera directa","Ya mencionó las palabras 'queja', 'abogado externo' o 'cancelar'"],
+    protocolo:["Desde la primera vez que llame más de 5 veces en una semana, empieza a anotar el scoring","Ponle la etiqueta 'Ruidoso' en el sistema y cambia cómo le comunicamos las cosas","Después de cada llamada importante, manda un resumen escrito de lo que se habló — eso te protege","Si el tono cambió mucho: avísale al especialista en menos de 24 horas","Si menciona la queja formal: activa de inmediato el protocolo de alto riesgo — avisa a Compliance y Legal ese día"]
+  },
+  { perfil:"El Exigente / Experto", color:"#1A4A1A", icono:"⚖️",
+    descripcion:"Este cliente sabe mucho (o cree que sabe). Llama por todos lados, propone estrategias, compara su caso con el de otros y presiona constantemente. No es malo por naturaleza, pero si se siente ignorado, escala rápido.",
+    progression:["Desde el inicio hace muchas preguntas técnicas","→ Empieza a presionar para que hagamos las cosas a su manera","→ Propone estrategias o dice que 'otro abogado le dijo que debería hacerse así'","→ Compara su caso con otros para presionar","→ Si se siente bloqueado o ignorado, escala a queja formal"],
+    indicadores:["Desde la primera llamada usó términos legales o técnicos con mucha precisión","Propone cosas como 'deberían presentar esto antes' o 'por qué no piden aquello'","Dice cosas como 'mi amigo tuvo el mismo proceso y a él le tardó menos'","Llama varias veces el mismo día por distintos medios","Ya tuvo un caso con otra firma y lo compara constantemente"],
+    protocolo:["Asigna este caso a un abogado desde el principio — el staff solo no puede manejarlo bien","Sé muy específico cuando le expliques algo — las respuestas vagas lo irritan más","Documenta cada conversación con detalle: qué preguntó, qué le dijiste, qué quedó acordado","Si empieza a proponer que haga cosas por su cuenta con otro abogado: activa protocolo de intervención","Asegúrate de que el contrato y el consentimiento digan con claridad hasta dónde llega nuestra representación"]
+  },
+  { perfil:"La Regla del 80/20", color:BLUE, icono:"🎯",
+    descripcion:"4 situaciones que, cuando se juntan, casi siempre terminan en queja. No importa qué tipo de cliente sea — si estas 4 cosas pasan al mismo tiempo, el riesgo es altísimo.",
+    progression:["1️⃣ El cliente no sabe qué está pasando en su caso ahorita","2️⃣ El caso ya está en manos de USCIS y el cliente siente que ya no controlamos nada","3️⃣ Solo le contestamos cuando él llama — nunca lo llamamos primero","4️⃣ Alguien externo le dice que tiene razón en estar enojado"],
+    indicadores:["Si le preguntas al cliente '¿qué está pasando con tu caso?', no sabe qué contestar","El caso se envió a USCIS y no hubo ninguna comunicación nuestra después de eso","Todas las notas en TramCase son del cliente llamando — ninguna es nuestra llamando a él","El cliente mencionó 'otro abogado me dijo...', revisó USCIS.gov por su cuenta, o preguntó a un familiar que sabe de leyes","El cliente dejó de llamar después de que no le dimos una respuesta satisfactoria"],
+    protocolo:["Cada semana, revisa si algún caso tiene estas 4 condiciones al mismo tiempo — es tu filtro más importante","Si las 4 se juntan: márcalo como Alto Riesgo aunque el puntaje sea bajo","Contáctalo de inmediato de manera proactiva: explícale qué está pasando, por qué, y cuál es el siguiente paso","Regístralo como caso prioritario en el sistema con seguimiento semanal obligatorio","Revisa si el cliente ya tomó alguna acción externa que no nos haya dicho"]
+  }
+];
+
+// ---------- state ----------
+let state = { tab:"amenazas", scoringView:"ia", prevPlazo:"corto", detSel:0, openAmenazas:{} };
+
+function badgeColors(nivel){
+  const map = { "CRÍTICO":[RED,"#fff"], "ALTO":["#C0392B","#fff"], "ESTRUCTURAL":[MID,"#fff"] };
+  return map[nivel] || ["#888","#fff"];
+}
+
+function renderMainTabs(){
+  const c = document.getElementById("mainTabs");
+  c.innerHTML = "";
+  tabs.forEach(t=>{
+    const b = document.createElement("button");
+    b.className = "tab-btn" + (state.tab===t.id ? " active":"");
+    b.textContent = t.label;
+    b.onclick = ()=>{ state.tab = t.id; render(); };
+    c.appendChild(b);
+  });
+}
+
+function renderAmenazas(container){
+  const info = document.createElement("div");
+  info.className = "info-box info-amber";
+  info.innerHTML = "💡 <strong>¿Qué son estas señales?</strong> Son cosas que el cliente hace o dice que nos indican que puede estar a punto de presentar una queja formal. Cuantas más señales aparecen juntas, más urgente es actuar.";
+  container.appendChild(info);
+
+  amenazas.forEach((cat, ci)=>{
+    const block = document.createElement("div");
+    block.className = "cat-block";
+    const head = document.createElement("div");
+    head.className = "cat-header";
+    head.style.background = cat.color;
+    head.textContent = cat.categoria;
+    block.appendChild(head);
+
+    cat.items.forEach((item, ii)=>{
+      const key = ci+"-"+ii;
+      const row = document.createElement("div");
+      row.className = "item-row" + (state.openAmenazas[key] ? " open":"");
+      const [bg,fg] = badgeColors(item.nivel);
+      let inner = `<span class="badge" style="background:${bg};color:${fg}">${item.nivel}</span>`;
+      if(item.puntos){ inner += `<span class="pts-badge">${item.puntos} pts</span>`; }
+      inner += `<span class="señal-text">${item.señal}</span><span class="chevron">${state.openAmenazas[key] ? "▲":"▼"}</span>`;
+      row.innerHTML = inner;
+      row.onclick = ()=>{ state.openAmenazas[key] = !state.openAmenazas[key]; render(); };
+      block.appendChild(row);
+
+      const detail = document.createElement("div");
+      detail.className = "item-detail" + (state.openAmenazas[key] ? " show":"");
+      detail.innerHTML = `<strong style="color:${cat.color}">¿Por qué importa? </strong>${item.impacto}`;
+      block.appendChild(detail);
+    });
+
+    container.appendChild(block);
+  });
+}
+
+function renderScoring(container){
+  const row = document.createElement("div");
+  row.className = "subtab-row";
+  [["ia","Cómo lo evalúa la IA"],["monitor","Cómo lo evalúa el Monitor"],["rangos","Qué hacemos según el resultado"]].forEach(([v,l])=>{
+    const b = document.createElement("button");
+    b.className = "subtab-btn" + (state.scoringView===v ? " active":"");
+    if(state.scoringView===v){ b.style.background=BLUE; b.style.borderColor=BLUE; } else { b.style.borderColor="#ddd"; }
+    b.textContent = l;
+    b.onclick = ()=>{ state.scoringView = v; render(); };
+    row.appendChild(b);
+  });
+  container.appendChild(row);
+
+  if(state.scoringView === "ia"){
+    const info = document.createElement("div");
+    info.className = "info-box info-blue";
+    info.textContent = "💡 La IA le da un porcentaje de riesgo a cada caso (de 0 a 100%). Si el porcentaje es 50% o más, o si tiene al menos una señal roja, pasa a revisión manual del Monitor.";
+    container.appendChild(info);
+
+    scoring.ia.forEach(c=>{
+      const b = document.createElement("div");
+      b.className = "score-block";
+      const head = document.createElement("div");
+      head.className = "score-block-head";
+      head.innerHTML = `<span class="name">${c.cat}</span><span class="weight">${c.peso} del total</span>`;
+      b.appendChild(head);
+      const body = document.createElement("div");
+      body.className = "score-block-body";
+      c.items.forEach(it=>{
+        const line = document.createElement("div");
+        line.className = "score-item-line";
+        line.textContent = "• " + it;
+        body.appendChild(line);
+      });
+      b.appendChild(body);
+      container.appendChild(b);
+    });
+  }
+
+  if(state.scoringView === "monitor"){
+    const info = document.createElement("div");
+    info.className = "info-box info-blue";
+    info.textContent = "💡 El Monitor revisa el caso y le pone puntos del 1 al 10 a cada señal que encuentra. Al final suma todo. Cuantos más puntos, más urgente es actuar.";
+    container.appendChild(info);
+
+    scoring.monitor.forEach(c=>{
+      const b = document.createElement("div");
+      b.className = "score-block";
+      const head = document.createElement("div");
+      head.className = "score-block-head";
+      head.style.color = BLUE;
+      head.innerHTML = `<span class="name">${c.cat}</span>`;
+      b.appendChild(head);
+      const grid = document.createElement("div");
+      grid.className = "monitor-grid";
+      c.items.forEach(([label,pts])=>{
+        const it = document.createElement("div");
+        it.className = "monitor-item";
+        it.style.background = pts>=9 ? "#FFF0F0" : pts>=7 ? "#FFFBF0" : "#F9F9F9";
+        const ptsColor = pts>=9 ? RED : pts>=7 ? AMBER : "#666";
+        it.innerHTML = `<span>${label}</span><span class="pts" style="color:${ptsColor}">${pts}</span>`;
+        grid.appendChild(it);
+      });
+      b.appendChild(grid);
+      container.appendChild(b);
+    });
+  }
+
+  if(state.scoringView === "rangos"){
+    const h1 = document.createElement("h3");
+    h1.style.color = BLUE; h1.style.fontSize="14px"; h1.style.marginBottom="10px";
+    h1.textContent = "¿Cuántos puntos tiene = qué hacemos?";
+    container.appendChild(h1);
+
+    scoring.rangos.forEach((r,i)=>{
+      const row = document.createElement("div");
+      row.className = "range-row";
+      row.style.background = i%2===0 ? "#F8F9FB" : "#fff";
+      row.innerHTML = `<span class="nivel">${r.nivel}</span><span class="rango">${r.rango}</span><span class="accion">${r.accion}</span>`;
+      container.appendChild(row);
+    });
+
+    const h2 = document.createElement("h3");
+    h2.style.color = RED; h2.style.fontSize="14px"; h2.style.margin="20px 0 6px";
+    h2.textContent = "🚩 Señales rojas — Actuar de inmediato";
+    container.appendChild(h2);
+
+    const p = document.createElement("p");
+    p.style.fontSize="12.5px"; p.style.color="#555"; p.style.marginBottom="12px";
+    p.innerHTML = "Si el caso tiene <strong>cualquiera</strong> de estas señales, hay que actuar — aunque el puntaje sea bajo.";
+    container.appendChild(p);
+
+    const grid = document.createElement("div");
+    grid.className = "redflag-grid";
+    scoring.redflags.forEach(rf=>{
+      const it = document.createElement("div");
+      it.className = "redflag-item";
+      it.innerHTML = `<span style="color:${RED};font-weight:700;flex-shrink:0">⚑</span><span>${rf}</span>`;
+      grid.appendChild(it);
+    });
+    container.appendChild(grid);
+  }
+}
+
+function renderPrevencion(container){
+  const labels = {
+    corto:["🔥 Ahora (primeras semanas)","Cosas que hay que hacer de inmediato, sin esperar","#8B1A1A"],
+    mediano:["⚙️ En los próximos meses","Construir el sistema completo de monitoreo","#1B5E3A"],
+    largo:["🏛️ A largo plazo","Consolidar la política institucional de la firma",BLUE],
+  };
+  const row = document.createElement("div");
+  row.className = "subtab-row";
+  ["corto","mediano","largo"].forEach(p=>{
+    const b = document.createElement("button");
+    b.className = "subtab-btn" + (state.prevPlazo===p ? " active":"");
+    const col = labels[p][2];
+    if(state.prevPlazo===p){ b.style.background=col; b.style.borderColor=col; } else { b.style.borderColor="#ddd"; }
+    b.textContent = labels[p][0];
+    b.onclick = ()=>{ state.prevPlazo = p; render(); };
+    row.appendChild(b);
+  });
+  container.appendChild(row);
+
+  const [l,d,c] = labels[state.prevPlazo];
+  const banner = document.createElement("div");
+  banner.className = "prev-banner";
+  banner.style.background = c + "15";
+  banner.style.borderColor = c;
+  banner.style.color = c;
+  banner.textContent = d;
+  container.appendChild(banner);
+
+  prevencion[state.prevPlazo].forEach(bloque=>{
+    const b = document.createElement("div");
+    b.className = "prev-block";
+    const head = document.createElement("div");
+    head.className = "prev-block-head";
+    head.style.background = c;
+    head.textContent = bloque.area;
+    b.appendChild(head);
+    const body = document.createElement("div");
+    body.className = "prev-block-body";
+    bloque.acciones.forEach(a=>{
+      const line = document.createElement("div");
+      line.className = "prev-action";
+      line.innerHTML = `<span class="prev-check" style="color:${c}">✓</span><span>${a}</span>`;
+      body.appendChild(line);
+    });
+    b.appendChild(body);
+    container.appendChild(b);
+  });
+}
+
+function renderDeteccion(container){
+  const info = document.createElement("div");
+  info.className = "info-box info-amber";
+  info.innerHTML = "💡 <strong>¿Por qué identificar el tipo de cliente?</strong> Cada tipo necesita una respuesta diferente. El que grita nos da tiempo de reaccionar. El silencioso no — hay que detectarlo antes de que actúe.";
+  container.appendChild(info);
+
+  const row = document.createElement("div");
+  row.className = "subtab-row";
+  deteccion.forEach((p,i)=>{
+    const b = document.createElement("button");
+    b.className = "profile-btn" + (state.detSel===i ? " active":"");
+    if(state.detSel===i){ b.style.background=p.color; b.style.borderColor=p.color; } else { b.style.borderColor="#ddd"; }
+    b.textContent = p.icono + " " + p.perfil;
+    b.onclick = ()=>{ state.detSel = i; render(); };
+    row.appendChild(b);
+  });
+  container.appendChild(row);
+
+  const d = deteccion[state.detSel];
+  const card = document.createElement("div");
+  card.className = "profile-card";
+  card.style.borderColor = d.color;
+
+  const head = document.createElement("div");
+  head.className = "profile-head";
+  head.style.background = d.color;
+  head.innerHTML = `<div class="name">${d.icono} ${d.perfil}</div><div class="desc">${d.descripcion}</div>`;
+  card.appendChild(head);
+
+  const body = document.createElement("div");
+  body.className = "profile-body";
+
+  const progTitle = document.createElement("div");
+  progTitle.style.fontWeight="700"; progTitle.style.fontSize="13px"; progTitle.style.color=d.color; progTitle.style.marginBottom="8px";
+  progTitle.textContent = "📈 ¿Cómo suele pasar?";
+  body.appendChild(progTitle);
+
+  const progRow = document.createElement("div");
+  progRow.className = "prog-row";
+  d.progression.forEach(p=>{
+    const chip = document.createElement("span");
+    chip.className = "prog-chip";
+    chip.style.background = d.color + "18";
+    chip.style.borderColor = d.color + "40";
+    chip.textContent = p;
+    progRow.appendChild(chip);
+  });
+  body.appendChild(progRow);
+
+  const twoCol = document.createElement("div");
+  twoCol.className = "two-col";
+
+  const colInd = document.createElement("div");
+  const indTitle = document.createElement("div");
+  indTitle.style.fontWeight="700"; indTitle.style.fontSize="13px"; indTitle.style.color=d.color; indTitle.style.marginBottom="8px";
+  indTitle.textContent = "🔎 ¿Cómo lo identifico?";
+  colInd.appendChild(indTitle);
+  d.indicadores.forEach(ind=>{
+    const line = document.createElement("div");
+    line.className = "ind-line";
+    line.innerHTML = `<span class="ind-dot" style="color:${d.color}">●</span><span>${ind}</span>`;
+    colInd.appendChild(line);
+  });
+  twoCol.appendChild(colInd);
+
+  const colProto = document.createElement("div");
+  const protoTitle = document.createElement("div");
+  protoTitle.style.fontWeight="700"; protoTitle.style.fontSize="13px"; protoTitle.style.color=GREEN; protoTitle.style.marginBottom="8px";
+  protoTitle.textContent = "✅ ¿Qué hago cuando lo detecto?";
+  colProto.appendChild(protoTitle);
+  d.protocolo.forEach((paso,i)=>{
+    const line = document.createElement("div");
+    line.className = "proto-line";
+    line.innerHTML = `<span class="proto-num">${i+1}</span><span>${paso}</span>`;
+    colProto.appendChild(line);
+  });
+  twoCol.appendChild(colProto);
+
+  body.appendChild(twoCol);
+  card.appendChild(body);
+  container.appendChild(card);
+}
+
+function render(){
+  renderMainTabs();
+  const content = document.getElementById("content");
+  content.innerHTML = "";
+  if(state.tab === "amenazas") renderAmenazas(content);
+  if(state.tab === "scoring") renderScoring(content);
+  if(state.tab === "prevencion") renderPrevencion(content);
+  if(state.tab === "deteccion") renderDeteccion(content);
+}
+
+render();
+</script>
+</body>
+</html>
