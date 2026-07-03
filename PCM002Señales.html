@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>PCM-002 — Guía de Riesgo</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: Arial, sans-serif;
+    background: #F0F4FA;
+    margin: 0;
+    min-height: 100vh;
+  }
+  .header {
+    background: linear-gradient(90deg, #0D2B47 0%, #1B3A6B 60%, #2E6DA4 100%);
+    padding: 20px 28px 16px;
+  }
+  .header .eyebrow {
+    font-size: 11px;
+    color: rgba(255,255,255,0.6);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .header .title {
+    color: #fff;
+    font-weight: 800;
+    font-size: 20px;
+  }
+  .header .subtitle {
+    color: rgba(255,255,255,0.7);
+    font-size: 13px;
+    margin-top: 5px;
+  }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 14px;
+  }
+  .legend-badge {
+    border-radius: 4px;
+    padding: 2px 9px;
+    font-size: 11px;
+    font-weight: 700;
+    border: 1.5px solid;
+  }
+  .subheader {
+    padding: 12px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #E4ECF7;
+    border-bottom: 1px solid #C5D5EA;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .subheader-text {
+    font-size: 13px;
+    color: #1B3A6B;
+    font-weight: 600;
+  }
+  #toggleAllBtn {
+    background: #1B3A6B;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 6px 16px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  #toggleAllBtn:hover {
+    background: #16305A;
+  }
+  .cards {
+    padding: 20px 28px;
+  }
+  .card {
+    border: 1px solid #D5E3F0;
+    border-radius: 8px;
+    margin-bottom: 18px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(27,58,107,0.07);
+    background: #fff;
+  }
+  .card-header {
+    background: linear-gradient(90deg, #1B3A6B 0%, #2E6DA4 100%);
+    padding: 12px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    justify-content: space-between;
+    cursor: pointer;
+  }
+  .card-header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+  }
+  .card-number {
+    background: rgba(255,255,255,0.18);
+    color: #fff;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+  .card-titles { min-width: 0; }
+  .card-condicion {
+    color: #fff;
+    font-weight: 700;
+    font-size: 14px;
+  }
+  .card-disparador {
+    color: rgba(255,255,255,0.75);
+    font-size: 12px;
+    margin-top: 2px;
+  }
+  .card-header-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  .badge {
+    display: inline-block;
+    border-radius: 4px;
+    padding: 2px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    border: 1.5px solid;
+    white-space: nowrap;
+  }
+  .chevron {
+    color: rgba(255,255,255,0.8);
+    font-size: 18px;
+    transition: transform 0.2s ease;
+  }
+  .card-body {
+    padding: 0 18px;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease;
+  }
+  .card-body.open {
+    max-height: 2000px;
+  }
+  .card-body-inner {
+    padding-top: 16px;
+    padding-bottom: 16px;
+  }
+  .grid2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 720px) {
+    .grid2 { grid-template-columns: 1fr; }
+    .header, .subheader, .cards { padding-left: 16px; padding-right: 16px; }
+  }
+  .panel {
+    border-radius: 6px;
+    padding: 14px 16px;
+  }
+  .panel-que {
+    background: #F4F8FE;
+    border: 1px solid #BDD3EE;
+  }
+  .panel-header {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-weight: 700;
+    font-size: 13px;
+    margin-bottom: 10px;
+  }
+  .panel-que .panel-header { color: #1B3A6B; }
+  .panel-icon { font-size: 16px; }
+  .pill {
+    border-radius: 4px;
+    padding: 6px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: #fff;
+  }
+  .pill-que { background: #1B3A6B; }
+  .pill-por { background: #1E6B3A; }
+  .steps {
+    margin: 0;
+    padding-left: 18px;
+  }
+  .steps li {
+    font-size: 13px;
+    color: #2C3E50;
+    margin-bottom: 8px;
+    line-height: 1.6;
+  }
+  .panel-por {
+    background: #F6FDF8;
+    border: 1px solid #A9D9B8;
+    display: flex;
+    flex-direction: column;
+  }
+  .panel-por .panel-header { color: #1E6B3A; }
+  .panel-por p {
+    font-size: 13px;
+    color: #2C3E50;
+    line-height: 1.65;
+    margin: 0;
+    flex: 1;
+  }
+  .output-box {
+    margin-top: 12px;
+    background: #FFFBF0;
+    border: 1px solid #F0D080;
+    border-radius: 6px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .output-icon { font-size: 15px; }
+  .output-label {
+    font-weight: 700;
+    font-size: 12.5px;
+    color: #7D6608;
+  }
+  .output-text {
+    font-size: 13px;
+    color: #555;
+  }
+  .footer {
+    text-align: center;
+    color: #8899AA;
+    font-size: 11px;
+    padding: 10px 0 24px;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="eyebrow">Mendoza Law Firm · Guía de Riesgo</div>
+  <div class="title">PCM-002 — Qué hacer cuando hay señales de peligro</div>
+  <div class="subtitle">10 situaciones de riesgo · Qué pasa, quién actúa y por qué importa · Uso interno</div>
+  <div class="legend" id="legend"></div>
+</div>
+
+<div class="subheader">
+  <div class="subheader-text">Toca cada situación para ver qué hay que hacer y por qué es importante</div>
+  <button id="toggleAllBtn">Ver todo</button>
+</div>
+
+<div class="cards" id="cards"></div>
+
+<div class="footer">Mendoza Law Firm · Uso interno · Confidencial</div>
+
+<script>
+const data = [
+  {
+    condicion: "El caso lleva más de 180 días abierto",
+    disparador: "El caso lleva mucho tiempo sin cerrarse",
+    mecanismo: {
+      titulo: "El sistema lanza una alerta automática y hay que revisar el caso",
+      pasos: [
+        "Cuando un caso cumple 180 días sin resolverse, el sistema SIS genera solo una alerta. No hay que hacer nada para activarla — pasa automáticamente.",
+        "Hay que revisar una lista de verificación: ¿ya le llegaron los recibos al cliente? ¿Hay actualizaciones registradas? ¿Hay algún RFE pendiente? ¿Cuándo fue el último contacto?",
+        "El monitor que tiene asignado el caso debe escribir una nota en SIS dentro de las siguientes 48 horas explicando cómo está el caso y qué se va a hacer.",
+        "Si no hay nada escrito que justifique la situación del caso, el sistema lo sube automáticamente al siguiente nivel de supervisión."
+      ]
+    },
+    responsable: "Monitor",
+    output: "Nota de revisión guardada en SIS",
+    reduccion: {
+      efecto: "Evita que el cliente sienta que lo abandonamos",
+      desarrollo: "Cuando un cliente lleva meses sin ver que pasa algo con su caso, empieza a pensar que la firma lo olvidó. Esa sensación es la razón número uno por la que los clientes ponen quejas. La alerta automática nos avisa antes de que el cliente llegue a ese punto, y la nota de revisión es la prueba de que sí estábamos trabajando — algo que podemos mostrar si algún día hay una queja."
+    }
+  },
+  {
+    condicion: "Nadie del equipo ha contactado al cliente recientemente",
+    disparador: "Pasaron demasiados días sin comunicación",
+    mecanismo: {
+      titulo: "Hay que contactar al cliente y guardar su confirmación por escrito",
+      pasos: [
+        "Se define cuántos días máximo pueden pasar sin que nosotros contactemos al cliente (depende de la etapa del caso). Cuando se llega a ese límite, el sistema manda una alerta.",
+        "Alguien del monitor o del equipo de operaciones tiene que contactar al cliente de una manera que quede registrada: una llamada con nota en el sistema, un correo con acuse de recibo, o un mensaje que el cliente pueda confirmar.",
+        "El contacto no cuenta como válido hasta que el cliente responda algo por escrito, aunque sea un simple 'ok, recibido'.",
+        "Si el cliente no responde en los días siguientes, el caso sube al abogado asignado para que sea él quien lo contacte directamente."
+      ]
+    },
+    responsable: "Monitor / Operaciones",
+    output: "Respuesta del cliente guardada en el expediente",
+    reduccion: {
+      efecto: "Si hay queja, podemos demostrar que sí nos comunicamos",
+      desarrollo: "Si un cliente pone una queja diciendo que nunca lo contactamos, la única forma de defendernos es tener un registro de que sí lo hicimos. Un mensaje del cliente diciendo 'recibí tu correo' es suficiente para probar que hubo comunicación. Sin ese registro, el cliente puede decir lo que quiera y nosotros no podemos contradecirlo. El silencio sin evidencia siempre juega en contra de la firma."
+    }
+  },
+  {
+    condicion: "El cliente está molesto o llama más de lo normal",
+    disparador: "El cliente cambió su tono o llama mucho más seguido",
+    mecanismo: {
+      titulo: "Se registra la conducta del cliente y se le pone una etiqueta de riesgo",
+      pasos: [
+        "Cada vez que un cliente llame molesto, repita la misma pregunta varias veces o muestre señales de que algo no le está gustando, eso se anota en el sistema como un punto de alerta.",
+        "Cuando los puntos llegan a cierto número, el sistema automáticamente marca al cliente como 'en riesgo' en el CRM.",
+        "Con esa etiqueta, se evalúa qué tipo de cliente es: ¿el que grita mucho? ¿el que exige y sabe de leyes? ¿o el que se pone silencioso y actúa de sorpresa? Dependiendo del tipo, se ajusta cómo nos comunicamos con él.",
+        "Todo esto queda guardado como parte del historial del caso."
+      ]
+    },
+    responsable: "Monitor",
+    output: "Registro de alertas conductuales en el expediente",
+    reduccion: {
+      efecto: "Detectamos el problema antes de que explote",
+      desarrollo: "La mayoría de las quejas formales no salen de la nada — vienen precedidas por semanas o meses de señales que nadie anotó ni escaló. Cuando llevamos un registro de cuántas veces el cliente llamó molesto o repitió una pregunta, convertimos algo subjetivo ('me pareció que estaba enojado') en datos concretos que justifican actuar. Eso también nos protege: podemos demostrar que la firma sí detectó el riesgo y tomó acciones."
+    }
+  },
+  {
+    condicion: "El cliente que estaba molesto de repente dejó de comunicarse",
+    disparador: "Después de una llamada difícil, el cliente desapareció",
+    mecanismo: {
+      titulo: "Se activa una bandera de alerta y el caso sube de nivel",
+      pasos: [
+        "Si un cliente que había expresado molestia deja de contestar o de llamar, eso no significa que se calmó. Se registra como una señal de peligro — no de calma.",
+        "El caso deja de estar en manos del monitor y pasa a gestión directa del abogado o supervisor.",
+        "Se activa una bandera en SIS que dice 'cliente en riesgo silencioso'. Esa bandera no se quita hasta que alguien logre hablar con el cliente y deje registro de eso.",
+        "El equipo intenta contactarlo por varias vías, con más frecuencia de lo normal, porque este tipo de cliente — el que calla y actúa — es el más difícil de detectar a tiempo."
+      ]
+    },
+    responsable: "Monitor",
+    output: "Bandera de alerta activa en SIS",
+    reduccion: {
+      efecto: "Evita que la queja nos llegue de sorpresa",
+      desarrollo: "El cliente que deja de comunicarse después de estar molesto es el más peligroso en este contexto, precisamente porque el sistema normal de alertas no lo detecta: no está gritando, no está amenazando, no está llamando mucho. Está actuando en silencio. La bandera en SIS hace que ese silencio sea tratado como una señal de peligro activa, y nos obliga a buscarlo antes de que sea él quien se comunique con el Colegio de Abogados."
+    }
+  },
+  {
+    condicion: "El cliente pide que le regresen su dinero o que cancelen su caso",
+    disparador: "El cliente está insatisfecho y quiere salirse",
+    mecanismo: {
+      titulo: "El caso pasa a un especialista que lo revisa de arriba a abajo",
+      pasos: [
+        "Cualquier vez que un cliente pida que le regresen su dinero o que cancelen su caso — ya sea de palabra o por escrito — eso activa un protocolo especial de inmediato.",
+        "El caso se transfiere a un especialista que se encarga de clientes en conflicto.",
+        "El especialista revisa todo el expediente, identifica qué fue lo que hizo que el cliente llegara a este punto, y evalúa si hay riesgo de que esto termine en una queja o en una disputa legal.",
+        "Todo lo que se hace a partir de ese momento queda anotado en un registro con fechas, nombres y resultados."
+      ]
+    },
+    responsable: "Especialista",
+    output: "Registro de intervención con fechas y acciones tomadas",
+    reduccion: {
+      efecto: "Atajamos el problema antes de que se convierta en algo peor",
+      desarrollo: "Cuando un cliente pide cancelar o pide que le regresen su dinero, generalmente es la última señal antes de que haga algo más grande: disputar el cobro con el banco, poner una reseña negativa, o presentar una queja formal. Si lo tratamos como un trámite normal, perdemos la oportunidad de intervenir. Si lo tratamos como lo que es — una crisis — podemos documentar todo lo que hacemos y a veces incluso recuperar la confianza del cliente antes de que actúe."
+    }
+  },
+  {
+    condicion: "El cliente dice que fue a consultar con otro abogado",
+    disparador: "Alguien externo ya se metió en el caso",
+    mecanismo: {
+      titulo: "El caso sube de nivel y se programa una llamada de intervención",
+      pasos: [
+        "En el momento en que el cliente menciona que fue a ver a otro abogado o que ya contrató a alguien más, eso activa una escalada inmediata.",
+        "El caso pasa a gestión conjunta entre el especialista y el abogado asignado — ya no lo maneja solo el monitor.",
+        "Se programa una llamada de intervención con el objetivo de: escuchar al cliente, explicarle claramente cómo va su caso y documentar toda esa conversación.",
+        "Se guarda un registro completo de esa llamada: quién habló, cuándo, qué se dijo y cómo respondió el cliente."
+      ]
+    },
+    responsable: "Especialista / Abogado",
+    output: "Registro de la llamada de intervención guardado",
+    reduccion: {
+      efecto: "Evitamos que el otro abogado sea el que termine de convencer al cliente",
+      desarrollo: "Cuando un cliente va con otro abogado y ese abogado le dice 'sí, tienes razón en estar molesto', el cliente deja de dudar y actúa. Por eso, el tiempo que hay entre que nos dice que fue a consultar y el momento en que nosotros intervenimos es crítico. Si intervenimos rápido, con hechos claros y documentados, todavía podemos cambiar la narrativa. Si esperamos, el otro abogado ya ganó."
+    }
+  },
+  {
+    condicion: "El cliente amenaza con poner una queja formal",
+    disparador: "El cliente dijo directamente que va a actuar contra la firma",
+    mecanismo: {
+      titulo: "Se activa el protocolo de emergencia y el caso sube a Cumplimiento y Legal",
+      pasos: [
+        "Cualquier mención de queja formal — aunque sea de pasada — activa el protocolo de máximo riesgo de inmediato.",
+        "El caso se transfiere simultáneamente al equipo de Cumplimiento y al equipo Legal de la firma.",
+        "Solo el abogado asignado o un socio puede hablar con el cliente a partir de ese momento. El staff regular no puede contactarlo.",
+        "Se documenta todo el historial del caso desde el inicio: qué comunicaciones hubo, qué se hizo, qué pasó.",
+        "Se evalúa si hay que avisar al seguro de responsabilidad profesional de la firma."
+      ]
+    },
+    responsable: "Cumplimiento + Legal",
+    output: "Resumen completo del caso con historial de acciones tomadas",
+    reduccion: {
+      efecto: "Protegemos a la firma si la queja se hace real",
+      desarrollo: "Cuando un cliente dice que va a poner una queja, todavía hay una ventana para intervenir y evitarlo. Pero también hay que prepararse por si esa ventana se cierra. El protocolo de emergencia hace las dos cosas al mismo tiempo: intenta calmar al cliente y construye el expediente de defensa. Todo lo que hagamos a partir de ese momento puede ser revisado por el Colegio de Abogados, así que cada acción tiene que estar documentada con precisión."
+    }
+  },
+  {
+    condicion: "Al cliente le rechazaron el caso o le llegó un RFE inesperado",
+    disparador: "El cliente recibió una mala noticia de USCIS",
+    mecanismo: {
+      titulo: "Se revisa el expediente y se le llama al cliente en las primeras 24 horas",
+      pasos: [
+        "Cuando llega una notificación de RFE o rechazo, lo primero es revisar el expediente para saber si este resultado era algo que se podía prever, y si es así, verificar si el cliente fue informado de ese riesgo desde el principio.",
+        "El especialista llama al cliente dentro de las primeras 24 horas para explicarle con calma qué pasó, por qué pasó y cuáles son los siguientes pasos.",
+        "Se le manda un correo al cliente con esa explicación por escrito, y ese correo se guarda en el expediente.",
+        "Si la revisión muestra que el riesgo existía pero nunca se le comunicó al cliente, se activa el protocolo de emergencia."
+      ]
+    },
+    responsable: "Especialista",
+    output: "Explicación escrita del resultado guardada en el expediente",
+    reduccion: {
+      efecto: "Evitamos que el cliente crea que el rechazo fue por nuestra culpa",
+      desarrollo: "Cuando a un cliente le rechazan su caso o le llega un RFE que no esperaba, su primera reacción casi siempre es pensar que la firma no hizo bien su trabajo. Llamarle en las primeras 24 horas cambia completamente esa percepción: demuestra que estamos encima del caso y que no lo abandonamos en el momento difícil. Y si tenemos documentado que el riesgo de ese resultado le fue explicado desde el principio, tenemos una defensa muy sólida si decide poner una queja."
+    }
+  },
+  {
+    condicion: "El cliente no sabe bien qué puede esperar del proceso",
+    disparador: "Desde el inicio hubo confusión sobre qué puede y qué no puede hacer la firma",
+    mecanismo: {
+      titulo: "Se verifica que el Consentimiento Informado esté bien firmado y entendido",
+      pasos: [
+        "En todo caso nuevo, hay que confirmar que el Consentimiento Informado cubra como mínimo estos puntos: que los tiempos los decide USCIS y no la firma, que no hay garantías de aprobación, que pueden llegar RFEs, y que puede haber costos adicionales.",
+        "Si el consentimiento que se tiene no cubre esos puntos, hay que actualizarlo antes de avanzar con el caso.",
+        "Cuando el cliente firma, alguien del equipo tiene que leerle el documento y asegurarse de que lo entendió — y dejar registro de eso.",
+        "El consentimiento firmado y el registro de que el cliente entendió se guardan como los documentos de defensa más importantes del expediente."
+      ]
+    },
+    responsable: "Operaciones + Cumplimiento",
+    output: "Consentimiento firmado + confirmación de que el cliente entendió",
+    reduccion: {
+      efecto: "Si el cliente dice 'nadie me explicó nada', tenemos la prueba de que sí",
+      desarrollo: "La frase que más aparece en las quejas formales es 'nadie me dijo que esto podía pasar'. Un Consentimiento Informado bien hecho, firmado y con confirmación de que el cliente lo entendió hace que esa frase no tenga peso. Es la protección más básica y más importante que existe, y también la más fácil de implementar. Si no existe o está incompleto, todo lo demás que hagamos bien pierde valor."
+    }
+  },
+  {
+    condicion: "El cliente pregunta una y otra vez cuándo va a resolverse su caso",
+    disparador: "El cliente está ansioso porque siente que todo tarda demasiado",
+    mecanismo: {
+      titulo: "El abogado le explica directamente cómo funciona USCIS y por qué los tiempos no los controlamos nosotros",
+      pasos: [
+        "Cuando un cliente empieza a preguntar repetidamente cuándo va a salir su caso, no basta con contestar la pregunta — hay que hacer algo más.",
+        "El abogado asignado (no el staff administrativo) contacta al cliente para explicarle de manera clara y con tiempo cómo funciona USCIS, qué factores deciden cuánto tarda un caso y por qué eso no es algo que la firma pueda controlar.",
+        "Si hay materiales visuales o escritos que expliquen el estatus de USCIS de forma sencilla, se le comparten al cliente en esa conversación.",
+        "El abogado le manda un resumen de lo que se habló, y ese resumen queda guardado en el expediente."
+      ]
+    },
+    responsable: "Abogado (estructurado)",
+    output: "Resumen de la conversación enviado al cliente y guardado",
+    reduccion: {
+      efecto: "El cliente deja de pensar que los tiempos son nuestra culpa",
+      desarrollo: "Cuando un cliente pregunta muchas veces cuándo va a salir su caso, generalmente es porque no entiende quién decide eso. Si nadie se lo explica bien, el cliente llega a la conclusión de que la firma es responsable de la demora. Pero cuando el abogado — no alguien del staff — se toma el tiempo de explicarle cómo funciona USCIS, eso tiene un efecto muy diferente: el cliente siente que lo toman en serio, entiende que la espera no es negligencia, y baja la guardia."
+    }
+  }
+];
+
+const categoryColors = {
+  "Monitor": { bg: "#E8F0FB", text: "#1B3A6B", border: "#1B3A6B" },
+  "Monitor / Operaciones": { bg: "#EAF4FB", text: "#1B3A6B", border: "#2980B9" },
+  "Especialista": { bg: "#FEF9E7", text: "#7D6608", border: "#F1C40F" },
+  "Especialista / Abogado": { bg: "#FEF9E7", text: "#7D6608", border: "#E67E22" },
+  "Cumplimiento + Legal": { bg: "#FDEDEC", text: "#922B21", border: "#E74C3C" },
+  "Operaciones + Cumplimiento": { bg: "#EBF5FB", text: "#1A5276", border: "#2980B9" },
+  "Abogado (estructurado)": { bg: "#EAFAF1", text: "#1E8449", border: "#27AE60" },
+};
+
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function badgeStyle(resp) {
+  const c = categoryColors[resp] || { bg: "#F0F0F0", text: "#333", border: "#999" };
+  return `background:${c.bg};color:${c.text};border-color:${c.border};`;
+}
+
+// Build legend
+const legendEl = document.getElementById('legend');
+Object.entries(categoryColors).forEach(([k, v]) => {
+  const span = document.createElement('span');
+  span.className = 'legend-badge';
+  span.style.cssText = `background:${v.bg};color:${v.text};border-color:${v.border};`;
+  span.textContent = k;
+  legendEl.appendChild(span);
+});
+
+// Build cards
+const cardsEl = document.getElementById('cards');
+let openStates = data.map(() => false);
+
+function render() {
+  cardsEl.innerHTML = data.map((item, idx) => `
+    <div class="card">
+      <div class="card-header" data-idx="${idx}">
+        <div class="card-header-left">
+          <span class="card-number">${idx + 1}</span>
+          <div class="card-titles">
+            <div class="card-condicion">${esc(item.condicion)}</div>
+            <div class="card-disparador">¿Cuándo pasa? ${esc(item.disparador)}</div>
+          </div>
+        </div>
+        <div class="card-header-right">
+          <span class="badge" style="${badgeStyle(item.responsable)}">${esc(item.responsable)}</span>
+          <span class="chevron">${openStates[idx] ? '▲' : '▼'}</span>
+        </div>
+      </div>
+      <div class="card-body ${openStates[idx] ? 'open' : ''}">
+        <div class="card-body-inner">
+          <div class="grid2">
+            <div class="panel panel-que">
+              <div class="panel-header"><span class="panel-icon">⚙️</span><span>¿Qué hay que hacer?</span></div>
+              <div class="pill pill-que">${esc(item.mecanismo.titulo)}</div>
+              <ol class="steps">
+                ${item.mecanismo.pasos.map(p => `<li>${esc(p)}</li>`).join('')}
+              </ol>
+            </div>
+            <div class="panel panel-por">
+              <div class="panel-header"><span class="panel-icon">🛡️</span><span>¿Por qué es importante hacer esto?</span></div>
+              <div class="pill pill-por">${esc(item.reduccion.efecto)}</div>
+              <p>${esc(item.reduccion.desarrollo)}</p>
+            </div>
+          </div>
+          <div class="output-box">
+            <span class="output-icon">📄</span>
+            <div>
+              <span class="output-label">¿Qué hay que dejar registrado? </span>
+              <span class="output-text">${esc(item.output)}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  document.querySelectorAll('.card-header').forEach(h => {
+    h.addEventListener('click', () => {
+      const idx = parseInt(h.getAttribute('data-idx'));
+      openStates[idx] = !openStates[idx];
+      render();
+    });
+  });
+}
+
+document.getElementById('toggleAllBtn').addEventListener('click', () => {
+  const anyClosed = openStates.some(v => !v);
+  openStates = data.map(() => anyClosed);
+  document.getElementById('toggleAllBtn').textContent = anyClosed ? 'Cerrar todo' : 'Ver todo';
+  render();
+});
+
+render();
+</script>
+</body>
+</html>
