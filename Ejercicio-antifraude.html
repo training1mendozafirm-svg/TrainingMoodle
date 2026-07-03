@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taller de Antifraude - Ejercicios Prácticos</title>
+    <style>
+/* Estilos para Taller de Antifraude - SCORM 1.2 */
+/* Paleta de colores: #D9ABAC, #FFFFFF, #B9C9DF, #B9D9DF */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #B9D9DF 0%, #B9C9DF 100%);
+    color: #333;
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Header */
+.header {
+    background: #FFFFFF;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+    border-left: 6px solid #D9ABAC;
+}
+
+.header h1 {
+    color: #2c3e50;
+    font-size: 2.2em;
+    margin-bottom: 10px;
+}
+
+.header p {
+    color: #555;
+    font-size: 1.1em;
+}
+
+/* Progress Indicator */
+.progress-container {
+    background: #FFFFFF;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.progress-bar {
+    width: 100%;
+    height: 30px;
+    background: #e0e0e0;
+    border-radius: 15px;
+    overflow: hidden;
+    position: relative;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #D9ABAC 0%, #B9C9DF 100%);
+    transition: width 0.5s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+}
+
+/* Content Sections */
+.module-section {
+    display: none;
+    background: #FFFFFF;
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+    animation: fadeIn 0.5s ease;
+}
+
+.module-section.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.module-section h2 {
+    color: #2c3e50;
+    font-size: 2em;
+    margin-bottom: 20px;
+    border-left: 5px solid #D9ABAC;
+    padding-left: 20px;
+}
+
+.module-section h3 {
+    color: #34495e;
+    font-size: 1.5em;
+    margin-top: 30px;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #B9C9DF;
+    padding-bottom: 10px;
+}
+
+.module-section h4 {
+    color: #2c3e50;
+    font-size: 1.2em;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+.module-section p {
+    margin-bottom: 15px;
+    color: #555;
+    font-size: 1.05em;
+}
+
+.module-section ul,
+.module-section ol {
+    margin-left: 30px;
+    margin-bottom: 20px;
+}
+
+.module-section li {
+    margin-bottom: 10px;
+    color: #555;
+}
+
+/* Alert boxes */
+.alert-box {
+    padding: 20px;
+    border-radius: 10px;
+    margin: 20px 0;
+    border-left: 5px solid;
+}
+
+.alert-info {
+    background: #B9D9DF;
+    border-color: #2980b9;
+    color: #2c3e50;
+}
+
+.alert-warning {
+    background: #D9ABAC;
+    border-color: #c0392b;
+    color: #2c3e50;
+}
+
+.alert-success {
+    background: #B9C9DF;
+    border-color: #27ae60;
+    color: #2c3e50;
+}
+
+/* Scenario Box */
+.scenario-box {
+    background: #f8f9fa;
+    border: 3px solid #B9C9DF;
+    border-radius: 10px;
+    padding: 25px;
+    margin: 25px 0;
+}
+
+.scenario-box h4 {
+    color: #D9ABAC;
+    font-size: 1.3em;
+    margin-bottom: 15px;
+}
+
+/* Question Container */
+.question-container {
+    background: #f8f9fa;
+    border-left: 5px solid #B9C9DF;
+    padding: 25px;
+    margin: 25px 0;
+    border-radius: 5px;
+}
+
+.question-text {
+    font-size: 1.15em;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 20px;
+}
+
+/* Options for Quiz */
+.option {
+    background: #FFFFFF;
+    border: 2px solid #B9C9DF;
+    padding: 15px 20px;
+    margin: 10px 0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.option:hover {
+    background: #B9D9DF;
+    border-color: #D9ABAC;
+    transform: translateX(5px);
+}
+
+.option input[type="radio"] {
+    margin-right: 15px;
+    cursor: pointer;
+}
+
+.option label {
+    cursor: pointer;
+    font-size: 1.05em;
+    display: inline;
+}
+
+/* Text Area */
+textarea {
+    width: 100%;
+    min-height: 150px;
+    padding: 15px;
+    border: 2px solid #B9C9DF;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 1em;
+    resize: vertical;
+    margin: 10px 0;
+}
+
+textarea:focus {
+    outline: none;
+    border-color: #D9ABAC;
+}
+
+/* Buttons */
+.navigation {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    margin-top: 40px;
+    flex-wrap: wrap;
+}
+
+button {
+    padding: 15px 40px;
+    font-size: 1.1em;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary {
+    background: #D9ABAC;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #c79a9b;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+}
+
+.btn-secondary {
+    background: #B9C9DF;
+    color: #2c3e50;
+}
+
+.btn-secondary:hover {
+    background: #a8b8cf;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+}
+
+.btn-success {
+    background: #27ae60;
+    color: white;
+}
+
+.btn-success:hover {
+    background: #229954;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Results */
+.results-container {
+    text-align: center;
+    padding: 40px;
+}
+
+.score-display {
+    font-size: 4em;
+    font-weight: bold;
+    margin: 30px 0;
+    color: #2c3e50;
+}
+
+.score-display.passed {
+    color: #27ae60;
+}
+
+.score-display.failed {
+    color: #c0392b;
+}
+
+.result-message {
+    font-size: 1.5em;
+    margin: 20px 0;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.result-message.passed {
+    background: #d4edda;
+    color: #155724;
+    border: 2px solid #27ae60;
+}
+
+.result-message.failed {
+    background: #f8d7da;
+    color: #721c24;
+    border: 2px solid #c0392b;
+}
+
+/* Rubric Table */
+.rubric-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 25px 0;
+    background: white;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.rubric-table th {
+    background: #D9ABAC;
+    color: white;
+    padding: 15px;
+    text-align: left;
+    font-weight: 600;
+}
+
+.rubric-table td {
+    padding: 15px;
+    border-bottom: 1px solid #ddd;
+}
+
+.rubric-table tr:nth-child(even) {
+    background: #f8f9fa;
+}
+
+.rubric-table tr:hover {
+    background: #B9D9DF;
+}
+
+/* SCORM Debug (opcional) */
+#scorm-debug {
+    display: none;
+    background: #2c3e50;
+    color: #ecf0f1;
+    padding: 15px;
+    border-radius: 5px;
+    margin-top: 20px;
+    font-family: monospace;
+    font-size: 0.9em;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+/* Quiz Navigation */
+.quiz-navigation {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 30px;
+    gap: 15px;
+}
+
+.question-counter {
+    background: #B9C9DF;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+    
+    .header h1 {
+        font-size: 1.5em;
+    }
+    
+    .module-section {
+        padding: 20px;
+    }
+    
+    .navigation {
+        flex-direction: column;
+    }
+    
+    button {
+        width: 100%;
+    }
+}
+
+</style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>🛡️ Taller de Antifraude</h1>
+            <p>Ejercicios de Acompañamiento al E-learning (60%)</p>
+            <p><strong>Mendoza Law Firm LLC</strong></p>
+        </header>
+
+        <!-- Progress Bar -->
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-bar" style="width: 0%;">0%</div>
+            </div>
+        </div>
+
+        <main class="content">
+            <!-- INTRODUCCIÓN -->
+            <section class="module-section active" id="section1">
+                <h2>📋 Introducción</h2>
+                
+                <div class="alert-box alert-info">
+                    <p><strong>Bienvenido/a al Taller Práctico de Antifraude</strong></p>
+                    <p>Este taller complementa el contenido del E-learning y representa el <strong>60% de tu evaluación final</strong>.</p>
+                </div>
+
+                <h3>Objetivos del Taller</h3>
+                <ul>
+                    <li>Reforzar la identificación de señales de fraude en casos reales</li>
+                    <li>Aplicar conceptos legales (INA vs. ABA) en situaciones prácticas</li>
+                    <li>Practicar respuestas éticas bajo presión</li>
+                    <li>Implementar el Protocolo Antifraude de la firma</li>
+                </ul>
+
+                <h3>Estructura del Taller</h3>
+                <p>El taller consta de <strong>2 ejercicios prácticos</strong>:</p>
+                <ol>
+                    <li><strong>Ejercicio 1:</strong> Análisis de Caso – ¿Fraude, Falsedad Intencional o Conducta Ética?</li>
+                    <li><strong>Ejercicio 2:</strong> Dilema Ético y Aplicación de la Regla 8.4 (ABA)</li>
+                </ol>
+
+                <div class="alert-box alert-warning">
+                    <p><strong>⚠️ Importante:</strong></p>
+                    <p>Lee cuidadosamente cada escenario y pregunta. Tus respuestas deben demostrar:</p>
+                    <ul>
+                        <li>Comprensión de los conceptos de fraude y falsedad intencional</li>
+                        <li>Conocimiento de la Regla 8.4 de la ABA</li>
+                        <li>Capacidad de aplicar el Protocolo Antifraude</li>
+                        <li>Juicio ético profesional</li>
+                    </ul>
+                </div>
+
+                <h3>Sistema de Evaluación</h3>
+                <p>Cada ejercicio se evaluará según una rúbrica específica con criterios claros. La puntuación total es de <strong>18 puntos</strong>.</p>
+                
+                <ul>
+                    <li><strong>14-18 pts:</strong> Excelente – Aplica conceptos con precisión y ética</li>
+                    <li><strong>9-13 pts:</strong> Adecuado – Comprende, pero necesita práctica en aplicación</li>
+                    <li><strong>&lt;9 pts:</strong> Requiere reforzar conceptos y protocolos</li>
+                </ul>
+
+                <div class="navigation">
+                    <button class="btn-primary" onclick="nextSection()">Comenzar Ejercicio 1 →</button>
+                </div>
+            </section>
+
+            <!-- EJERCICIO 1 -->
+            <section class="module-section" id="section2">
+                <h2>📝 Ejercicio 1: Análisis de Caso</h2>
+                <h3>¿Fraude, Falsedad Intencional o Conducta Ética?</h3>
+
+                <div class="alert-box alert-info">
+                    <p><strong>Objetivo:</strong> Reforzar la identificación de señales de fraude y la aplicación de conceptos legales (INA vs. ABA)</p>
+                </div>
+
+                <div class="scenario-box">
+                    <h4>📖 Escenario</h4>
+                    <p>Un <strong>cliente potencial (PC)</strong> contacta para solicitar una visa U (víctima de crimen). Durante la entrevista, el PC menciona que sufrió un asalto, pero <strong>no quiere presentar el reporte policial</strong> porque "fue un malentendido y ya lo arregló con el agresor".</p>
+                    <p>Además, sugiere que podrían <strong>"inventar algunos detalles"</strong> para hacer el caso más fuerte y asegurar la aprobación.</p>
+                </div>
+
+                <h3>Preguntas del Ejercicio 1</h3>
+
+                <!-- Pregunta 1.1 -->
+                <div class="question-container">
+                    <p class="question-text"><strong>1.1 Identificación de Señales de Alerta</strong></p>
+                    <p>¿Qué señales de alerta de fraude encuentras en este caso? (Ejemplo: omisión de información crítica, intención de falsificar)</p>
+                    <textarea id="q1_1" placeholder="Escribe tu respuesta aquí..."></textarea>
+                </div>
+
+                <!-- Pregunta 1.2 -->
+                <div class="question-container">
+                    <p class="question-text"><strong>1.2 Clasificación Legal</strong></p>
+                    <p>Si el cliente omite el reporte policial y exagera los hechos, ¿estaríamos ante una posible falsedad intencional, fraude según la INA, o ambos? Explica por qué.</p>
+                    <textarea id="q1_2" placeholder="Escribe tu respuesta aquí..."></textarea>
+                </div>
+
+                <!-- Pregunta 1.3 -->
+                <div class="question-container">
+                    <p class="question-text"><strong>1.3 Acción según Protocolo</strong></p>
+                    <p>Según el Protocolo Antifraude de la firma, ¿cuál sería el siguiente paso?</p>
+                    <ul>
+                        <li>¿Activarías el Protocolo Preventivo?</li>
+                        <li>¿Escalarías directamente al Protocolo Antifraude?</li>
+                        <li>¿Qué le dirías al cliente?</li>
+                    </ul>
+                    <textarea id="q1_3" placeholder="Escribe tu respuesta aquí..."></textarea>
+                </div>
+
+                <div class="alert-box alert-success">
+                    <p><strong>💡 Recuerda:</strong> Las respuestas deben incluir conceptos específicos del E-learning y demostrar comprensión del marco legal y ético.</p>
+                </div>
+
+                <div class="navigation">
+                    <button class="btn-secondary" onclick="prevSection()">← Anterior</button>
+                    <button class="btn-primary" onclick="nextSection()">Continuar al Ejercicio 2 →</button>
+                </div>
+            </section>
+
+            <!-- EJERCICIO 2 -->
+            <section class="module-section" id="section3">
+                <h2>📝 Ejercicio 2: Dilema Ético</h2>
+                <h3>Aplicación de la Regla 8.4 (ABA)</h3>
+
+                <div class="alert-box alert-info">
+                    <p><strong>Objetivo:</strong> Practicar la respuesta ética bajo presión, vinculando la norma profesional con el protocolo interno</p>
+                </div>
+
+                <div class="scenario-box">
+                    <h4>📖 Escenario</h4>
+                    <p>Eres <strong>agente de ventas</strong> y un cliente insiste en que le garantices la aprobación de su visa VAWA. Te dice:</p>
+                    <blockquote style="border-left: 4px solid #D9ABAC; padding-left: 15px; margin: 20px 0; font-style: italic;">
+                        "Otro despacho me prometió que si pago un extra, me aseguran la visa. ¿Ustedes pueden hacer lo mismo?"
+                    </blockquote>
+                    <p>Además, notas que el cliente <strong>cambia constantemente su relato</strong> sobre los abusos sufridos.</p>
+                </div>
+
+                <h3>Preguntas del Ejercicio 2</h3>
+
+                <!-- Pregunta 2.1 -->
+                <div class="question-container">
+                    <p class="question-text"><strong>2.1 Evaluación de Conducta</strong></p>
+                    <p>¿Qué incisos de la Regla 8.4 de la ABA (Mala Conducta Profesional) se podrían estar violando si accedieras a su petición? Enumera al menos tres y explica brevemente.</p>
+                    <textarea id="q2_1" placeholder="Escribe tu respuesta aquí..."></textarea>
+                </div>
+
+                <!-- Pregunta 2.2 -->
+                <div class="question-container">
+                    <p class="question-text"><strong>2.2 Señales de Alerta Aplicables</strong></p>
+                    <p>De la lista de señales presentadas en el E-learning, ¿cuáles identificas? Ejemplo: "Intención de soborno", "Narrativas incoherentes".</p>
+                    <textarea id="q2_2" placeholder="Escribe tu respuesta aquí..."></textarea>
+                </div>
+
+                <!-- Pregunta 2.3 -->
+                <div class="question-container">
+                    <p class="question-text"><strong>2.3 Respuesta Ética y Procedimental</strong></p>
+                    <p>Redacta una respuesta breve al cliente (como agente de la firma) que:</p>
+                    <ul>
+                        <li>Rechace éticamente la propuesta</li>
+                        <li>Explique los riesgos legales (fraude migratorio)</li>
+                        <li>Mencione la política de la firma basada en la verdad y el marco legal</li>
+                        <li>Indique si el caso debe pasar a revisión preventiva o escalarse</li>
+                    </ul>
+                    <textarea id="q2_3" placeholder="Escribe tu respuesta aquí..."></textarea>
+                </div>
+
+                <div class="alert-box alert-warning">
+                    <p><strong>⚠️ Importante:</strong> Tu respuesta debe demostrar comprensión de la Regla 8.4 de la ABA y aplicación del Protocolo Antifraude.</p>
+                </div>
+
+                <div class="navigation">
+                    <button class="btn-secondary" onclick="prevSection()">← Anterior</button>
+                    <button class="btn-primary" onclick="nextSection()">Ver Rúbricas de Evaluación →</button>
+                </div>
+            </section>
+
+            <!-- RÚBRICAS -->
+            <section class="module-section" id="section4">
+                <h2>📊 Rúbricas de Evaluación</h2>
+
+                <div class="alert-box alert-info">
+                    <p>A continuación se presentan las rúbricas que se utilizarán para evaluar tus respuestas.</p>
+                </div>
+
+                <h3>Rúbrica del Ejercicio 1</h3>
+                <table class="rubric-table">
+                    <thead>
+                        <tr>
+                            <th>Criterio</th>
+                            <th>Excelente (3 pts)</th>
+                            <th>Adecuado (2 pts)</th>
+                            <th>Insuficiente (1 pt)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Identificación de señales</strong></td>
+                            <td>Señala 3+ señales correctamente</td>
+                            <td>Señala 2 señales</td>
+                            <td>Identifica 1 o ninguna</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Clasificación legal</strong></td>
+                            <td>Explica diferencia entre fraude/falsedad y aplica al caso</td>
+                            <td>Menciona ambos, pero no aclara diferencia</td>
+                            <td>Confunde términos o no los aplica</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Acción y respuesta ética</strong></td>
+                            <td>Propone protocolo correcto y redacta respuesta coherente con políticas</td>
+                            <td>Acierta en protocolo pero respuesta incompleta</td>
+                            <td>No sigue protocolo o respuesta no ética</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Rúbrica del Ejercicio 2</h3>
+                <table class="rubric-table">
+                    <thead>
+                        <tr>
+                            <th>Criterio</th>
+                            <th>Excelente (3 pts)</th>
+                            <th>Adecuado (2 pts)</th>
+                            <th>Insuficiente (1 pt)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Aplicación Regla 8.4</strong></td>
+                            <td>Identifica ≥3 incisos correctos con explicación</td>
+                            <td>Identifica 2 incisos sin mucha explicación</td>
+                            <td>Identifica 1 o ninguno</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Señales de alerta</strong></td>
+                            <td>Relaciona 3+ señales con el caso</td>
+                            <td>Relaciona 2 señales</td>
+                            <td>No identifica señales claras</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Respuesta ética y protocolo</strong></td>
+                            <td>Redacta respuesta clara, ética y sigue protocolo paso a paso</td>
+                            <td>Respuesta aceptable, pero omite algún elemento clave</td>
+                            <td>Respuesta confusa o no ética; ignora protocolo</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Puntuación Total y Niveles de Desempeño</h3>
+                <ul>
+                    <li><strong>14-18 pts:</strong> Excelente – Aplica conceptos con precisión y ética</li>
+                    <li><strong>9-13 pts:</strong> Adecuado – Comprende, pero necesita práctica en aplicación</li>
+                    <li><strong>&lt;9 pts:</strong> Requiere reforzar conceptos y protocolos</li>
+                </ul>
+
+                <div class="navigation">
+                    <button class="btn-secondary" onclick="prevSection()">← Anterior</button>
+                    <button class="btn-primary" onclick="nextSection()">Continuar a la Evaluación →</button>
+                </div>
+            </section>
+
+            <!-- EVALUACIÓN QUIZ -->
+            <section class="module-section" id="section5">
+                <div id="quiz-intro">
+                    <h2>✅ Evaluación Final</h2>
+                    
+                    <div class="alert-box alert-warning">
+                        <p><strong>Instrucciones:</strong></p>
+                        <ul>
+                            <li>Responde las siguientes <strong>10 preguntas</strong> de selección múltiple</li>
+                            <li>Cada pregunta vale 10 puntos</li>
+                            <li>Necesitas <strong>80 puntos o más</strong> para aprobar</li>
+                            <li>Solo tienes <strong>1 intento</strong></li>
+                            <li>Una vez iniciada, debes completar toda la evaluación</li>
+                        </ul>
+                    </div>
+
+                    <div class="alert-box alert-info">
+                        <p><strong>💡 Recomendación:</strong> Revisa tus respuestas de los ejercicios antes de comenzar la evaluación.</p>
+                    </div>
+
+                    <div class="navigation">
+                        <button class="btn-success" onclick="startQuiz()">Iniciar Evaluación</button>
+                    </div>
+                </div>
+
+                <div id="quiz-container" style="display:none;">
+                    <h2>Evaluación en Progreso</h2>
+                    <div class="question-counter" id="question-counter"></div>
+                    
+                    <div id="question-display"></div>
+                    
+                    <div class="quiz-navigation">
+                        <button class="btn-secondary" id="prev-btn" onclick="prevQuestion()" disabled>← Anterior</button>
+                        <button class="btn-primary" id="next-btn" onclick="nextQuestion()">Siguiente →</button>
+                        <button class="btn-success" id="finish-btn" onclick="finishQuiz()" style="display:none;">Finalizar Evaluación</button>
+                    </div>
+                </div>
+
+                <div id="quiz-results" style="display:none;">
+                    <div class="results-container">
+                        <h2>📊 Resultados de la Evaluación</h2>
+                        <div class="score-display" id="final-score"></div>
+                        <div class="result-message" id="result-message"></div>
+                        
+                        <div id="score-breakdown"></div>
+                        
+                        <div class="alert-box alert-info">
+                            <p><strong>Tu calificación ha sido enviada a Moodle.</strong></p>
+                            <p>Puedes cerrar esta ventana o revisar tus respuestas.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Debug Panel (opcional) -->
+        <div id="scorm-debug"></div>
+    </div>
+
+    <script>
+/**
+ * SCORM 1.2 API - Versión Robusta para Moodle
+ * Taller de Antifraude - Mendoza Law Firm LLC
+ */
+var SCORM = (function() {
+    var api = null;
+    var initialized = false;
+    
+    function log(msg) {
+        console.log('[SCORM] ' + msg);
+        var debugPanel = document.getElementById('scorm-debug');
+        if (debugPanel) {
+            debugPanel.innerHTML += msg + '<br>';
+            debugPanel.scrollTop = debugPanel.scrollHeight;
+        }
+    }
+    
+    function scanForAPI(win) {
+        var attempts = 0;
+        try {
+            while (win && attempts < 500) {
+                attempts++;
+                if (win.API) return win.API;
+                if (win === win.parent) break;
+                win = win.parent;
+            }
+        } catch (e) {
+            // Acceso bloqueado por seguridad cross-origin (p.ej. preview fuera de Moodle)
+            return null;
+        }
+        return null;
+    }
+    
+    function findAPI() {
+        var theAPI = null;
+        try { theAPI = scanForAPI(window); } catch(e) {}
+        
+        if (!theAPI && window.opener) {
+            try { theAPI = scanForAPI(window.opener); } catch(e) {}
+        }
+        
+        if (!theAPI && window.top && window.top !== window) {
+            try { theAPI = scanForAPI(window.top); } catch(e) {}
+        }
+        
+        if (!theAPI && window.parent && window.parent !== window) {
+            try { if (window.parent.API) theAPI = window.parent.API; } catch(e) {}
+        }
+        
+        return theAPI;
+    }
+    
+    return {
+        init: function() {
+            if (initialized) return true;
+            
+            api = findAPI();
+            
+            if (!api) {
+                log('Modo standalone (sin LMS)');
+                initialized = true;
+                return true;
+            }
+            
+            var result = api.LMSInitialize('');
+            
+            if (result === 'true' || result === true) {
+                initialized = true;
+                var status = this.get('cmi.core.lesson_status');
+                if (status === 'not attempted' || status === '') {
+                    this.set('cmi.core.lesson_status', 'incomplete');
+                    this.commit();
+                }
+                log('SCORM inicializado correctamente');
+                return true;
+            }
+            log('Error al inicializar SCORM');
+            return false;
+        },
+        
+        get: function(key) {
+            if (!api) return '';
+            return api.LMSGetValue(key);
+        },
+        
+        set: function(key, value) {
+            if (!api) return true;
+            var result = api.LMSSetValue(key, String(value));
+            log('SET ' + key + ' = ' + value + ' : ' + result);
+            return (result === 'true' || result === true);
+        },
+        
+        commit: function() {
+            if (!api) return true;
+            var result = api.LMSCommit('');
+            log('COMMIT: ' + result);
+            return (result === 'true' || result === true);
+        },
+        
+        finish: function() {
+            if (!api) return true;
+            var result = api.LMSFinish('');
+            log('FINISH: ' + result);
+            return (result === 'true' || result === true);
+        },
+        
+        /**
+         * FUNCIÓN PRINCIPAL: Enviar calificación a Moodle
+         * @param {number} scoreRaw - Puntuación de 0 a 100
+         */
+        setScore: function(scoreRaw) {
+            log('Enviando puntuación: ' + scoreRaw);
+            this.set('cmi.core.score.raw', scoreRaw);
+            this.set('cmi.core.score.min', '0');
+            this.set('cmi.core.score.max', '100');
+            
+            var passed = scoreRaw >= 80;
+            this.set('cmi.core.lesson_status', passed ? 'passed' : 'failed');
+            
+            return this.commit();
+        }
+    };
+})();
+
+window.addEventListener('load', function() { 
+    SCORM.init(); 
+});
+
+window.addEventListener('beforeunload', function() { 
+    SCORM.commit(); 
+    SCORM.finish(); 
+});
+
+</script>
+    <script>
+        // ===== NAVEGACIÓN ENTRE SECCIONES =====
+        var currentSection = 1;
+        var totalSections = 5;
+        
+        function updateProgress() {
+            var progress = Math.round((currentSection / totalSections) * 100);
+            document.getElementById('progress-bar').style.width = progress + '%';
+            document.getElementById('progress-bar').textContent = progress + '%';
+        }
+        
+        function goToSection(num) {
+            if (num < 1 || num > totalSections) return;
+            
+            document.querySelectorAll('.module-section').forEach(s => s.classList.remove('active'));
+            document.getElementById('section' + num).classList.add('active');
+            currentSection = num;
+            updateProgress();
+            window.scrollTo(0, 0);
+        }
+        
+        function nextSection() { 
+            if (currentSection < totalSections) goToSection(currentSection + 1); 
+        }
+        
+        function prevSection() { 
+            if (currentSection > 1) goToSection(currentSection - 1); 
+        }
+
+        // ===== QUIZ =====
+        var questions = [
+            {
+                q: "¿Cuál de las siguientes NO es una señal de alerta de fraude migratorio?",
+                options: [
+                    "Intentos de soborno o pagos irregulares",
+                    "Narrativas coherentes y bien documentadas",
+                    "Omisión o alteración de información crítica",
+                    "Presión para acelerar procesos sin justificación"
+                ],
+                correct: 1
+            },
+            {
+                q: "La falsedad intencional según la INA requiere que la declaración falsa sea:",
+                options: [
+                    "Accidental pero relevante",
+                    "Material, falsa y deliberada",
+                    "Menor e irrelevante para el caso",
+                    "Verbal pero no documentada"
+                ],
+                correct: 1
+            },
+            {
+                q: "¿Qué inciso de la Regla 8.4 de la ABA prohíbe específicamente la deshonestidad y el fraude?",
+                options: [
+                    "Inciso (a)",
+                    "Inciso (b)",
+                    "Inciso (c)",
+                    "Inciso (e)"
+                ],
+                correct: 2
+            },
+            {
+                q: "Si un cliente sugiere 'inventar detalles' para fortalecer su caso, ¿cuál es la respuesta correcta según el Protocolo Antifraude?",
+                options: [
+                    "Aceptar si los detalles son menores",
+                    "Activar el Protocolo Preventivo y rechazar la propuesta",
+                    "Consultar con el cliente para 'ajustar' la narrativa",
+                    "Proceder normalmente sin documentar"
+                ],
+                correct: 1
+            },
+            {
+                q: "El Protocolo Preventivo de la firma se activa cuando:",
+                options: [
+                    "Ya se confirmó un fraude consumado",
+                    "Se detectan señales tempranas de riesgo o inconsistencias",
+                    "El cliente ha sido deportado",
+                    "No hay ninguna irregularidad en el caso"
+                ],
+                correct: 1
+            },
+            {
+                q: "¿Cuál de las siguientes acciones constituye 'influencia impropia' según la Regla 8.4(e)?",
+                options: [
+                    "Presentar evidencia legítima al juez",
+                    "Ofrecer un pago adicional para 'asegurar' la aprobación",
+                    "Solicitar una extensión de tiempo justificada",
+                    "Contratar un intérprete certificado"
+                ],
+                correct: 1
+            },
+            {
+                q: "Un cliente presenta un reporte policial que parece alterado. ¿Cuál es el primer paso?",
+                options: [
+                    "Ignorarlo si el resto del caso es sólido",
+                    "Confrontar al cliente y activar el Protocolo Preventivo",
+                    "Presentar el reporte sin cuestionar",
+                    "Modificar otros documentos para que coincidan"
+                ],
+                correct: 1
+            },
+            {
+                q: "La diferencia entre fraude y falsedad intencional es que:",
+                options: [
+                    "Son exactamente lo mismo",
+                    "El fraude requiere intención de engañar y que el oficial actúe basado en esa falsedad",
+                    "La falsedad intencional no tiene consecuencias legales",
+                    "Solo el fraude es sancionable"
+                ],
+                correct: 1
+            },
+            {
+                q: "Si un cliente cambia constantemente su relato sobre eventos clave, esto indica:",
+                options: [
+                    "Nerviosismo normal del proceso",
+                    "Una posible narrativa incoherente o preparada (señal de alerta)",
+                    "Que el caso es más fuerte",
+                    "Que no necesita más documentación"
+                ],
+                correct: 1
+            },
+            {
+                q: "¿Cuál es la consecuencia de NO seguir el Protocolo Antifraude cuando se detecta fraude?",
+                options: [
+                    "No hay consecuencias si el caso se gana",
+                    "Violación de la Regla 8.4, sanciones profesionales y posible complicidad en fraude",
+                    "Solo una amonestación verbal",
+                    "El cliente asume toda la responsabilidad"
+                ],
+                correct: 1
+            }
+        ];
+        
+        var userAnswers = [];
+        var currentQuestion = 0;
+        var quizCompleted = false;
+        
+        function startQuiz() {
+            document.getElementById('quiz-intro').style.display = 'none';
+            document.getElementById('quiz-container').style.display = 'block';
+            userAnswers = new Array(questions.length).fill(-1);
+            currentQuestion = 0;
+            renderQuestion();
+        }
+        
+        function renderQuestion() {
+            var q = questions[currentQuestion];
+            var html = '<div class="question-container">';
+            html += '<p class="question-text">Pregunta ' + (currentQuestion + 1) + ' de ' + questions.length + '</p>';
+            html += '<p class="question-text">' + q.q + '</p>';
+            
+            for (var i = 0; i < q.options.length; i++) {
+                var checked = userAnswers[currentQuestion] === i ? 'checked' : '';
+                html += '<div class="option">';
+                html += '<input type="radio" name="answer" id="opt' + i + '" value="' + i + '" ' + checked + ' onchange="selectAnswer(' + i + ')">';
+                html += '<label for="opt' + i + '">' + q.options[i] + '</label>';
+                html += '</div>';
+            }
+            
+            html += '</div>';
+            document.getElementById('question-display').innerHTML = html;
+            document.getElementById('question-counter').textContent = 'Pregunta ' + (currentQuestion + 1) + ' de ' + questions.length;
+            
+            // Update navigation buttons
+            document.getElementById('prev-btn').disabled = currentQuestion === 0;
+            
+            if (currentQuestion === questions.length - 1) {
+                document.getElementById('next-btn').style.display = 'none';
+                document.getElementById('finish-btn').style.display = 'inline-block';
+            } else {
+                document.getElementById('next-btn').style.display = 'inline-block';
+                document.getElementById('finish-btn').style.display = 'none';
+            }
+        }
+        
+        function selectAnswer(optionIndex) {
+            userAnswers[currentQuestion] = optionIndex;
+        }
+        
+        function nextQuestion() {
+            if (currentQuestion < questions.length - 1) {
+                currentQuestion++;
+                renderQuestion();
+            }
+        }
+        
+        function prevQuestion() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                renderQuestion();
+            }
+        }
+        
+        function finishQuiz() {
+            // Verificar que todas las preguntas estén respondidas
+            var unanswered = userAnswers.filter(a => a === -1).length;
+            
+            if (unanswered > 0) {
+                alert('Por favor responde todas las preguntas antes de finalizar. Faltan ' + unanswered + ' pregunta(s).');
+                return;
+            }
+            
+            if (!confirm('¿Estás seguro/a de que deseas finalizar la evaluación? No podrás cambiar tus respuestas después.')) {
+                return;
+            }
+            
+            // Calcular puntuación
+            var correct = 0;
+            for (var i = 0; i < questions.length; i++) {
+                if (userAnswers[i] === questions[i].correct) {
+                    correct++;
+                }
+            }
+            
+            var scoreRaw = Math.round((correct / questions.length) * 100);
+            
+            // ENVIAR A MOODLE
+            SCORM.setScore(scoreRaw);
+            
+            quizCompleted = true;
+            showResults(scoreRaw, correct);
+        }
+        
+        function showResults(scoreRaw, correct) {
+            document.getElementById('quiz-container').style.display = 'none';
+            document.getElementById('quiz-results').style.display = 'block';
+            
+            var scoreDisplay = document.getElementById('final-score');
+            var resultMessage = document.getElementById('result-message');
+            
+            scoreDisplay.textContent = scoreRaw + '%';
+            
+            if (scoreRaw >= 80) {
+                scoreDisplay.className = 'score-display passed';
+                resultMessage.className = 'result-message passed';
+                resultMessage.innerHTML = '<h3>¡Felicitaciones! 🎉</h3>' +
+                    '<p>Has aprobado la evaluación del Taller de Antifraude.</p>' +
+                    '<p>Respondiste correctamente ' + correct + ' de ' + questions.length + ' preguntas.</p>';
+            } else {
+                scoreDisplay.className = 'score-display failed';
+                resultMessage.className = 'result-message failed';
+                resultMessage.innerHTML = '<h3>No Aprobado</h3>' +
+                    '<p>Necesitas 80% o más para aprobar.</p>' +
+                    '<p>Respondiste correctamente ' + correct + ' de ' + questions.length + ' preguntas.</p>' +
+                    '<p>Te recomendamos revisar el contenido del E-learning y contactar con tu instructor.</p>';
+            }
+            
+            // Breakdown
+            var breakdown = '<h3>Detalles de tu Evaluación</h3>';
+            breakdown += '<p><strong>Preguntas correctas:</strong> ' + correct + ' / ' + questions.length + '</p>';
+            breakdown += '<p><strong>Preguntas incorrectas:</strong> ' + (questions.length - correct) + ' / ' + questions.length + '</p>';
+            breakdown += '<p><strong>Porcentaje:</strong> ' + scoreRaw + '%</p>';
+            
+            document.getElementById('score-breakdown').innerHTML = breakdown;
+            
+            window.scrollTo(0, 0);
+        }
+        
+        // Inicializar progreso
+        updateProgress();
+    </script>
+</body>
+</html>
